@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-namespace acdhOeaw\arche\bibtex;
+namespace acdhOeaw\arche\biblatex;
 
 use RuntimeException;
 use zozlak\logging\Log;
