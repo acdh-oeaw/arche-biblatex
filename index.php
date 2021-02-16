@@ -25,7 +25,7 @@
  */
 
 use acdhOeaw\acdhRepoLib\RepoResourceResolver;
-use acdhOeaw\arche\bibtex\Resource;
+use acdhOeaw\arche\biblatex\Resource;
 use zozlak\logging\Log;
 
 header('Access-Control-Allow-Origin: *');
