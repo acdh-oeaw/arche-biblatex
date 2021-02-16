@@ -1,7 +1,7 @@
 {
-    "name": "acdh-oeaw/arche-bibtex",
+    "name": "acdh-oeaw/arche-biblatex",
     "type": "project",
-    "description": "Dissemination service generatix BibTeX bibliographic information data (.bib files) from ARCHE metadata",
+    "description": "Dissemination service generatix BibLaTeX bibliographic information data (.bib files) from ARCHE metadata",
     "keywords": [],
     "homepage": "https://github.com/acdh-oeaw/arche-bibtex",
     "license": "MIT",
