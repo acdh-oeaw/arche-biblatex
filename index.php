@@ -43,7 +43,9 @@ $lang = filter_input(\INPUT_GET, 'lang') ?? $cfg->bibtex->defaultLang;
 try {
     $repoRes = $resolver->resolve($id);
     $res     = new Resource($repoRes, $cfg->bibtex, $log);
-    echo $res->getBibtex($lang);
+    $bibtex =  $res->getBibtex($lang);
+    header('Content-Type: application/x-bibtex');
+    echo $bibtex;
 } catch (Throwable $e) {
     $resolver->handleException($e, $log);
 }
