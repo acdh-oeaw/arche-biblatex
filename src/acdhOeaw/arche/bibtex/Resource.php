@@ -26,6 +26,7 @@
 
 namespace acdhOeaw\arche\bibtex;
 
+use RuntimeException;
 use zozlak\logging\Log;
 use zozlak\RdfConstants as RDF;
 use acdhOeaw\acdhRepoLib\RepoResourceInterface;
@@ -124,6 +125,12 @@ class Resource {
         return $bibtex;
     }
 
+    /**
+     * 
+     * @param mixed $definition
+     * @return string|null
+     * @throws RuntimeException
+     */
     private function formatProperty($definition): ?string {
         // simple cases
         if (is_string($definition)) {
@@ -135,7 +142,7 @@ class Resource {
 
         // constant values
         $definition       = (object) $definition;
-        $definition->type ??= self::TYPE_LITERAL;
+        $definition->type = $definition->type ?? self::TYPE_LITERAL;
         if ($definition->type === self::TYPE_CONST) {
             return $definition->value;
         } elseif ($definition->type === self::TYPE_CURRENT_DATE) {
@@ -143,7 +150,7 @@ class Resource {
         }
 
         // full resolution
-        $definition->src ??= self::SRC_RESOURCE;
+        $definition->src = $definition->src ?? self::SRC_RESOURCE;
         switch ($definition->src) {
             case self::SRC_RESOURCE:
                 $src = $this->meta;
@@ -161,7 +168,7 @@ class Resource {
             case self::TYPE_PERSON:
                 return $this->formatPersons($definition->properties, $src);
             case self::TYPE_EPRINT:
-                return preg_replace('|^https?://[^/]*/|', '', $this->getLiteral($definition->properties[0], $src));
+                return preg_replace('|^https?://[^/]*/|', '', (string) $this->getLiteral($definition->properties[0], $src));
             default:
                 throw new RuntimeException('Unsupported property type ' . $definition->type, 500);
         }
@@ -184,7 +191,7 @@ class Resource {
         } else {
             $actors = join('_', $actors);
         }
-        $year = substr($this->getLiteral($keyCfg->year), 0, 4);
+        $year = substr((string) $this->getLiteral($keyCfg->year), 0, 4);
         $id   = preg_replace('|^.*/|', '', $this->res->getUri());
         return "${actors}_${year}_${id}";
     }
@@ -208,7 +215,7 @@ class Resource {
      * 
      * Existence of a property takes precedense over existence of the preferred language.
      * 
-     * @param array $properties
+     * @param string[] $properties
      * @param \EasyRdf\Resource $resource
      * @return string|null
      */
@@ -225,6 +232,12 @@ class Resource {
         return join(', ', $values);
     }
 
+    /**
+     * 
+     * @param string[] $properties
+     * @param \EasyRdf\Resource $resource
+     * @return string|null
+     */
     private function formatPersons(array $properties,
                                    \EasyRdf\Resource $resource = null): ?string {
         $resource = $resource ?? $this->meta;
