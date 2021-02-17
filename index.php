@@ -39,11 +39,12 @@ $log                 = new Log($cfg->bibtex->logFile, $cfg->bibtex->logLevel);
 $resolver            = new RepoResourceResolver($cfg, $log);
 
 $id   = filter_input(\INPUT_GET, 'id');
+$id   = preg_replace('|/metadata$|', '', $id);
 $lang = filter_input(\INPUT_GET, 'lang') ?? $cfg->bibtex->defaultLang;
 try {
     $repoRes = $resolver->resolve($id);
     $res     = new Resource($repoRes, $cfg->bibtex, $log);
-    $bibtex =  $res->getBibtex($lang);
+    $bibtex  = $res->getBibtex($lang);
     header('Content-Type: application/x-bibtex');
     echo $bibtex;
 } catch (Throwable $e) {

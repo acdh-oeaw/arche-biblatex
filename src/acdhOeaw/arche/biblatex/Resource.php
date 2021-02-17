@@ -32,8 +32,13 @@ use zozlak\RdfConstants as RDF;
 use acdhOeaw\acdhRepoLib\RepoResourceInterface;
 
 /**
- * Description of Resource
- *
+ * Maps ARCHE resource metadata to a BibLaTeX bibliographic entry.
+ * 
+ * Fro BibTeX/BibLaTeX bibliographic entry reference see:
+ * - https://www.bibtex.com/g/bibtex-format/#fields
+ * - chapter 8 of http://tug.ctan.org/info/bibtex/tamethebeast/ttb_en.pdf
+ * - https://mirror.kumi.systems/ctan/macros/latex/contrib/biblatex/doc/biblatex.pdf
+ * 
  * @author zozlak
  */
 class Resource {
@@ -117,7 +122,7 @@ class Resource {
             $field = $this->formatProperty($definition);
             if (!empty($field)) {
                 $field  = $this->escapeBibtex($field);
-                $bibtex .= ",\n  $key = \"$field\"";
+                $bibtex .= ",\n  $key = {$field}";
             }
         }
         $bibtex .= "\n}\n";
@@ -259,6 +264,6 @@ class Resource {
     }
 
     private function escapeBibtex(string $value): string {
-        return strtr($value, ['{' => '\\{', '"' => '\\"', '$' => '\\$']);
+        return $value; // it seems that most important clients, like citation.js, anyway don't support any form of escaping
     }
 }
