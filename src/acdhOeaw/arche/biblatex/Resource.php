@@ -121,7 +121,7 @@ class Resource {
         foreach ($this->mapping as $key => $definition) {
             $field = $this->formatProperty($definition);
             if (!empty($field)) {
-                $field  = $this->escapeBibtex($field);
+                $field  = $this->escapeBibtex(trim($field));
                 $bibtex .= ",\n  $key = {" . $field . "}";
             }
         }
