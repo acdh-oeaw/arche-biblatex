@@ -216,9 +216,12 @@ class Resource {
     }
 
     /**
-     * Returns a first existing metadata value of a given list of properties.
+     * Gathers all values of given properties.
      * 
-     * Existence of a property takes precedense over existence of the preferred language.
+     * If a given property has at least one literal value in the preferred language,
+     * literal values in other language are discarded.
+     * 
+     * Empty values are discarded.
      * 
      * @param string[] $properties
      * @param \EasyRdf\Resource $resource
@@ -226,15 +229,34 @@ class Resource {
      */
     private function formatAll(array $properties,
                                \EasyRdf\Resource $resource = null): ?string {
-        $resource = $resource ?? $this->meta;
-        $values   = [];
+        $resource  = $resource ?? $this->meta;
+        $literals  = [];
+        $resources = [];
         foreach ($properties as $property) {
-            $value = $this->getLiteral($property, $resource);
-            if (!empty($value)) {
-                $values[] = $value;
+            foreach ($this->meta->all($property) as $i) {
+                if ($i instanceof \EasyRdf\Resource) {
+                    $value = $this->getLiteral($this->config->schema->label, $i);
+                    if (!empty($value)) {
+                        $resources[] = $value;
+                    }
+                } else {
+                    $value = (string) $i;
+                    if (!empty($value)) {
+                        $lang = (string) $i->getLang();
+                        if (!isset($literals[$lang])) {
+                            $literals[$lang] = [];
+                        }
+                        $values[$lang][] = $value;
+                    }
+                }
             }
         }
-        return join(', ', $values);
+        if (isset($values[$this->lang])) {
+            $values = $values[$this->lang];
+        } else {
+            $values = array_unique(array_merge(...array_values($values)));
+        }
+        return join(', ', array_merge($resources, $values));
     }
 
     /**
