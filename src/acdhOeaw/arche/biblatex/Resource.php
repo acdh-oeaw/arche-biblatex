@@ -122,7 +122,7 @@ class Resource {
             $field = $this->formatProperty($definition);
             if (!empty($field)) {
                 $field  = $this->escapeBibtex($field);
-                $bibtex .= ",\n  $key = {$field}";
+                $bibtex .= ",\n  $key = {" . $field . "}";
             }
         }
         $bibtex .= "\n}\n";
