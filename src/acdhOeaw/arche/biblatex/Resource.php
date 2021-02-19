@@ -271,7 +271,10 @@ class Resource {
         $persons  = [];
         foreach ($properties as $property) {
             foreach ($resource->allResources($property) as $person) {
-                $persons[] = $this->formatPerson($person);
+                $pid = $person->getUri();
+                if (!isset($persons[$pid])) {
+                    $persons[$pid] = $this->formatPerson($person);
+                }
             }
         }
         return join(' and ', $persons);
