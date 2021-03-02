@@ -237,7 +237,7 @@ class Resource {
         $literals  = [];
         $resources = [];
         foreach ($properties as $property) {
-            foreach ($this->meta->all($property) as $i) {
+            foreach ($resource->all($property) as $i) {
                 if ($i instanceof \EasyRdf\Resource) {
                     if ($onlyUrl) {
                         $value = $i->getUri();
