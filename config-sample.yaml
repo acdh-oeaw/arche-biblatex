@@ -23,7 +23,7 @@ bibtex:
             # 2. bibtexProperty: [list, of, rdf, property, URIs]
             #    maps to a coma-separated list of all values of listed properties (preferably in the defaultLang)
             # 2. bibtexProperty:
-            #      type: const/currentDate/eprint/literal/person (default literal)
+            #      type: const/currentDate/eprint/literal/person/url (default literal)
             #      src: resource/topCollection (default resource)
             #      properties: [list, of, rdf, property, URIs]
             #      value: value when type const
@@ -39,8 +39,10 @@ bibtex:
                 type: const
                 value: hdl
             url: 
-            - https://vocabs.acdh.oeaw.ac.at/schema#hasPid
-            - https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier
+                type: url
+                properties: 
+                - https://vocabs.acdh.oeaw.ac.at/schema#hasPid
+                - https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier
             urldate:
                 type: currentDate
             editor: https://vocabs.acdh.oeaw.ac.at/schema#hasEditor

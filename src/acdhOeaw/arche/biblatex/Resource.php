@@ -48,6 +48,7 @@ class Resource {
     const TYPE_CURRENT_DATE  = 'currentDate';
     const TYPE_LITERAL       = 'literal';
     const TYPE_EPRINT        = 'eprint';
+    const TYPE_URL           = 'url';
     const SRC_RESOURCE       = 'resource';
     const SRC_TOP_COLLECTION = 'topCollection';
 
@@ -174,6 +175,8 @@ class Resource {
                 return $this->formatPersons($definition->properties, $src);
             case self::TYPE_EPRINT:
                 return preg_replace('|^https?://[^/]*/|', '', (string) $this->getLiteral($definition->properties[0], $src));
+            case self::TYPE_URL:
+                return $this->formatAll($definition->properties, $src, true);
             default:
                 throw new RuntimeException('Unsupported property type ' . $definition->type, 500);
         }
@@ -228,16 +231,21 @@ class Resource {
      * @return string|null
      */
     private function formatAll(array $properties,
-                               \EasyRdf\Resource $resource = null): ?string {
+                               \EasyRdf\Resource $resource = null, 
+                               bool $onlyUrl = false): ?string {
         $resource  = $resource ?? $this->meta;
         $literals  = [];
         $resources = [];
         foreach ($properties as $property) {
             foreach ($this->meta->all($property) as $i) {
                 if ($i instanceof \EasyRdf\Resource) {
-                    $value = $this->getLiteral($this->config->schema->label, $i);
+                    if ($onlyUrl) {
+                        $value = $i->getUri();
+                    } else {
+                        $value = $this->getLiteral($this->config->schema->label, $i);
+                    }
                     if (!empty($value)) {
-                        $resources[] = $value;
+                        $resources[] = strpos($value, ',') !== false ? '{' . $value . '}' : $value;
                     }
                 } else {
                     $value = (string) $i;
@@ -246,7 +254,7 @@ class Resource {
                         if (!isset($literals[$lang])) {
                             $literals[$lang] = [];
                         }
-                        $values[$lang][] = $value;
+                        $values[$lang][] = strpos($value, ',') !== false ? '{' . $value . '}' : $value;
                     }
                 }
             }
