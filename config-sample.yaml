@@ -26,7 +26,9 @@ bibtex:
             #      type: const/currentDate/eprint/literal/person/url (default literal)
             #      src: resource/topCollection (default resource)
             #      properties: [list, of, rdf, property, URIs]
-            #      value: value when type const
+            #      prefNmsp: preferred value namespace for type "url"
+            #                when provided only single value is returned, preferably matching the given prefix
+            #      value: value when type "const"
             type: incollection
             title: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
             date: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
@@ -40,6 +42,7 @@ bibtex:
                 value: hdl
             url: 
                 type: url
+                prefNmsp: https://hdl.handle.net/
                 properties: 
                 - https://vocabs.acdh.oeaw.ac.at/schema#hasPid
                 - https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier

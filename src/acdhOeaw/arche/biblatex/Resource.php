@@ -176,7 +176,7 @@ class Resource {
             case self::TYPE_EPRINT:
                 return preg_replace('|^https?://[^/]*/|', '', (string) $this->getLiteral($definition->properties[0], $src));
             case self::TYPE_URL:
-                return $this->formatAll($definition->properties, $src, true);
+                return $this->formatAll($definition->properties, $src, true, $definition->prefNmsp ?? null);
             default:
                 throw new RuntimeException('Unsupported property type ' . $definition->type, 500);
         }
@@ -232,7 +232,8 @@ class Resource {
      */
     private function formatAll(array $properties,
                                \EasyRdf\Resource $resource = null, 
-                               bool $onlyUrl = false): ?string {
+                               bool $onlyUrl = false,
+                               ?string $nmsp = null): ?string {
         $resource  = $resource ?? $this->meta;
         $literals  = [];
         $resources = [];
@@ -262,9 +263,20 @@ class Resource {
         if (isset($values[$this->lang])) {
             $values = $values[$this->lang];
         } else {
-            $values = array_unique(array_merge(...array_values($values)));
+            $values = array_merge(...array_values($values));
         }
-        return join(', ', array_merge($resources, $values));
+        $values = array_unique(array_merge($resources, $values));
+        if ($nmsp !== null) {
+echo $nmsp."\n";
+            $n = strlen($nmsp);
+            foreach ($values as $i) {
+                if (substr($i, 0, $n) === $nmsp) {
+                    return $i;
+                }
+            }
+            return count($values) > 0 ? $values[0] : '';
+        }
+        return join(', ', $values);
     }
 
     /**
