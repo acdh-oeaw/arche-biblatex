@@ -267,7 +267,6 @@ class Resource {
         }
         $values = array_unique(array_merge($resources, $values));
         if ($nmsp !== null) {
-echo $nmsp."\n";
             $n = strlen($nmsp);
             foreach ($values as $i) {
                 if (substr($i, 0, $n) === $nmsp) {
