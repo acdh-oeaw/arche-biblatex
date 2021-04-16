@@ -2,6 +2,7 @@ bibtex:
     logFile: log
     logLevel: debug
     defaultLang: en
+    biblatexProperty: https://vocabs.acdh.oeaw.ac.at/schema#hasCustomCitation
     etal: etal
     mapping:
         person:

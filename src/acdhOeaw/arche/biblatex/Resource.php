@@ -27,6 +27,11 @@
 namespace acdhOeaw\arche\biblatex;
 
 use RuntimeException;
+use RenanBr\BibTexParser\Listener as BiblatexL;
+use RenanBr\BibTexParser\Parser as BiblatexP;
+use RenanBr\BibTexParser\Processor\TagNameCaseProcessor as BiblatexCP;
+use RenanBr\BibTexParser\Exception\ParserException as BiblatexE1;
+use RenanBr\BibTexParser\Exception\ProcessorException as BiblatexE2;
 use zozlak\logging\Log;
 use zozlak\RdfConstants as RDF;
 use acdhOeaw\acdhRepoLib\RepoResourceInterface;
@@ -95,7 +100,7 @@ class Resource {
         $this->log    = $log;
     }
 
-    public function getBibtex(string $lang): string {
+    public function getBibtex(string $lang, ?string $override = null): string {
         $this->lang = $lang;
         $this->res->loadMetadata(true, RepoResourceInterface::META_PARENTS);
         $this->meta = $this->res->getGraph();
@@ -117,18 +122,60 @@ class Resource {
             throw new RuntimeException("Repository resource is of unsupported class", 400);
         }
 
-        $bibtex = "";
-        $bibtex .= "@" . $this->mapping->type . "{" . $this->formatKey();
+        $firstLine = "@" . $this->mapping->type . "{" . $this->formatKey();
+        $bibtex    = [];
         foreach ($this->mapping as $key => $definition) {
+            $key   = mb_strtolower($key);
             $field = $this->formatProperty($definition);
             if (!empty($field)) {
-                $field  = $this->escapeBibtex(trim($field));
-                $bibtex .= ",\n  $key = {" . $field . "}";
+                $field        = $this->escapeBibtex(trim($field));
+                $bibtex[$key] = $field;
             }
         }
-        $bibtex .= "\n}\n";
 
-        return $bibtex;
+        $this->applyOverrides($bibtex);
+        if (!empty($override)) {
+            $this->applyOverrides($bibtex, $override);
+        }
+
+        $output = $firstLine;
+        foreach ($bibtex as $key => $value) {
+            $output .= ",\n  $key = {" . $value . "}";
+        }
+        $output .= "\n}\n";
+        return $output;
+    }
+
+    private function applyOverrides(array &$fields, ?string $override = null): void {
+        $biblatex = (string) ($override ?? $this->meta->getLiteral($this->config->biblatexProperty));
+        if (!empty($biblatex)) {
+            if (substr($biblatex, 0, 1) !== '@') {
+                $biblatex = "@dataset{foo,\n$biblatex\n}";
+            }
+
+            $listener = new BiblatexL();
+            $listener->addProcessor(new BiblatexCP(CASE_LOWER));
+            $parser   = new BiblatexP();
+            $parser->addListener($listener);
+            try {
+                $parser->parseString($biblatex);
+                $entries = $listener->export();
+                if (count($entries) !== 1) {
+                    throw new RuntimeException("Exactly one BibLaTeX entry expected but " . count($entries) . " parsed: $biblatex");
+                }
+                foreach ($entries[0] as $key => $value) {
+                    if (!in_array($key, ['type', '_type', '_original', 'citation-key'])) {
+                        $fields[$key] = $value;
+                    }
+                }
+            } catch (BiblatexE1 $e) {
+                $msg = $e->getMessage();
+                throw new RuntimeException("Can't parse ($msg): $biblatex");
+            } catch (BiblatexE2 $e) {
+                $msg = $e->getMessage();
+                throw new RuntimeException("Can't parse ($msg): $biblatex");
+            }
+        }
     }
 
     /**
@@ -231,9 +278,8 @@ class Resource {
      * @return string|null
      */
     private function formatAll(array $properties,
-                               \EasyRdf\Resource $resource = null, 
-                               bool $onlyUrl = false,
-                               ?string $nmsp = null): ?string {
+                               \EasyRdf\Resource $resource = null,
+                               bool $onlyUrl = false, ?string $nmsp = null): ?string {
         $resource  = $resource ?? $this->meta;
         $literals  = [];
         $resources = [];
@@ -311,3 +357,4 @@ class Resource {
         return $value; // it seems that most important clients, like citation.js, anyway don't support any form of escaping
     }
 }
+
