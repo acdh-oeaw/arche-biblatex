@@ -8,6 +8,7 @@ bibtex:
         person:
             name: https://vocabs.acdh.oeaw.ac.at/schema#hasFirstName
             surname: https://vocabs.acdh.oeaw.ac.at/schema#hasLastName
+            label: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
         key:
             actors:
             - https://vocabs.acdh.oeaw.ac.at/schema#hasEditor

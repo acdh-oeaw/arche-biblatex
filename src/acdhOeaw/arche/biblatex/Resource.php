@@ -255,7 +255,11 @@ class Resource {
         $cfg     = $this->config->mapping->person;
         $name    = $this->getLiteral($cfg->name, $person);
         $surname = $this->getLiteral($cfg->surname, $person);
-        return "$surname, $name";
+        if (!empty($name) || !empty($surname)) {
+            return "$surname, $name";
+        } else {
+            return '{' . $this->getLiteral($cfg->label, $person) . '}';
+        }
     }
 
     private function getLiteral(string $property,
