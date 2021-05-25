@@ -287,6 +287,7 @@ class Resource {
         $resource  = $resource ?? $this->meta;
         $literals  = [];
         $resources = [];
+        $values    = [];
         foreach ($properties as $property) {
             foreach ($resource->all($property) as $i) {
                 if ($i instanceof \EasyRdf\Resource) {
