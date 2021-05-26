@@ -105,11 +105,6 @@ class Resource {
         $this->res->loadMetadata(true, RepoResourceInterface::META_PARENTS);
         $this->meta = $this->res->getGraph();
 
-        $custom = $this->meta->getLiteral($this->config->schema->bibtex);
-        if ($custom !== null) {
-            return (string) $custom;
-        }
-
         $classes       = $this->meta->allResources(RDF::RDF_TYPE);
         $this->mapping = null;
         foreach ($classes as $c) {
