@@ -34,7 +34,7 @@ use RenanBr\BibTexParser\Exception\ParserException as BiblatexE1;
 use RenanBr\BibTexParser\Exception\ProcessorException as BiblatexE2;
 use zozlak\logging\Log;
 use zozlak\RdfConstants as RDF;
-use acdhOeaw\acdhRepoLib\RepoResourceInterface;
+use acdhOeaw\arche\lib\RepoResourceInterface;
 
 /**
  * Maps ARCHE resource metadata to a BibLaTeX bibliographic entry.
@@ -54,44 +54,15 @@ class Resource {
     const TYPE_LITERAL       = 'literal';
     const TYPE_EPRINT        = 'eprint';
     const TYPE_URL           = 'url';
-    const SRC_RESOURCE       = 'resource';
+    const SRC_PARENT         = 'parent';
     const SRC_TOP_COLLECTION = 'topCollection';
 
-    /**
-     * 
-     * @var \acdhOeaw\acdhRepoLib\RepoResourceInterface
-     */
-    private $res;
-
-    /**
-     * 
-     * @var \zozlak\logging\Log
-     */
-    private $log;
-
-    /**
-     * 
-     * @var object
-     */
-    private $config;
-
-    /**
-     * 
-     * @var \EasyRdf\Resource
-     */
-    private $meta;
-
-    /**
-     * 
-     * @var string
-     */
-    private $lang;
-
-    /**
-     * 
-     * @var object
-     */
-    private $mapping;
+    private \acdhOeaw\arche\lib\RepoResourceInterface $res;
+    private Log $log;
+    private object $config;
+    private \EasyRdf\Resource $meta;
+    private string $lang;
+    private object $mapping;
 
     public function __construct(RepoResourceInterface $res, object $config,
                                 Log $log) {
@@ -100,41 +71,55 @@ class Resource {
         $this->log    = $log;
     }
 
-    public function getBibtex(string $lang, ?string $override = null): string {
+    public function getBiblatex(string $lang, ?string $override = null,
+                                ?string $property = null): string {
         $this->lang = $lang;
-        $this->res->loadMetadata(true, RepoResourceInterface::META_PARENTS);
-        $this->meta = $this->res->getGraph();
+        if (!isset($this->meta)) {
+            $this->res->loadMetadata(true, RepoResourceInterface::META_PARENTS);
+            $this->meta = $this->res->getGraph();
+        }
 
-        $classes       = $this->meta->allResources(RDF::RDF_TYPE);
-        $this->mapping = null;
+        $classes = $this->meta->allResources(RDF::RDF_TYPE);
         foreach ($classes as $c) {
             if (isset($this->config->mapping->$c)) {
                 $this->mapping = $this->config->mapping->$c;
                 break;
             }
         }
-        if ($this->mapping === null) {
+        if (!isset($this->mapping)) {
             throw new RuntimeException("Repository resource is of unsupported class", 400);
         }
 
         $firstLine = "@" . $this->mapping->type . "{" . $this->formatKey();
-        $bibtex    = [];
-        foreach ($this->mapping as $key => $definition) {
+        $biblatex  = [];
+        $mapping   = (array) $this->mapping;
+        if (!empty($property)) {
+            if (isset($mapping[$property])) {
+                $mapping = [$property => $mapping[$property]];
+            } else {
+                $mapping = [];
+            }
+        }
+        foreach ($mapping as $key => $definition) {
             $key   = mb_strtolower($key);
             $field = $this->formatProperty($definition);
             if (!empty($field)) {
-                $field        = $this->escapeBibtex(trim($field));
-                $bibtex[$key] = $field;
+                $field          = $this->escapeBiblatex(trim($field));
+                $biblatex[$key] = $field;
             }
         }
 
-        $this->applyOverrides($bibtex);
+        $this->applyOverrides($biblatex);
         if (!empty($override)) {
-            $this->applyOverrides($bibtex, $override);
+            $this->applyOverrides($biblatex, $override);
+        }
+
+        if (!empty($property)) {
+            return $biblatex[$property] ?? '';
         }
 
         $output = $firstLine;
-        foreach ($bibtex as $key => $value) {
+        foreach ($biblatex as $key => $value) {
             $output .= ",\n  $key = {" . $value . "}";
         }
         $output .= "\n}\n";
@@ -198,27 +183,18 @@ class Resource {
         }
 
         // full resolution
-        $definition->src = $definition->src ?? self::SRC_RESOURCE;
-        switch ($definition->src) {
-            case self::SRC_RESOURCE:
-                $src = $this->meta;
-                break;
-            case self::SRC_TOP_COLLECTION:
-                $src = $this->getTopCollection();
-                break;
-            default:
-                throw new RuntimeException('Unsupported property source ' . $definition->src, 500);
+        if (in_array($definition->src ?? null, [self::SRC_PARENT, self::SRC_TOP_COLLECTION])) {
+            return $this->formatParent($definition->src, $definition->property);
         }
-
         switch ($definition->type) {
             case self::TYPE_LITERAL:
-                return $this->formatAll($definition->properties, $src);
+                return $this->formatAll($definition->properties);
             case self::TYPE_PERSON:
-                return $this->formatPersons($definition->properties, $src);
+                return $this->formatPersons($definition->properties);
             case self::TYPE_EPRINT:
-                return preg_replace('|^https?://[^/]*/|', '', (string) $this->getLiteral($definition->properties[0], $src));
+                return preg_replace('|^https?://[^/]*/|', '', (string) $this->getLiteral($definition->properties[0]));
             case self::TYPE_URL:
-                return $this->formatAll($definition->properties, $src, true, $definition->prefNmsp ?? null);
+                return $this->formatAll($definition->properties, null, true, $definition->prefNmsp ?? null);
             default:
                 throw new RuntimeException('Unsupported property type ' . $definition->type, 500);
         }
@@ -345,16 +321,23 @@ class Resource {
         return join(' and ', $persons);
     }
 
-    private function getTopCollection(): \EasyRdf\Resource {
-        $res    = $this->meta;
-        while ($parent = $res->getResource($this->config->schema->parent)) {
-            $res = $parent;
+    private function formatParent(string $type, string $property): ?string {
+        $continue = true;
+        $res      = $this->meta;
+        while ($continue && ($parent   = $res->getResource($this->config->schema->parent))) {
+            $res      = $parent;
+            $continue &= $type === self::SRC_TOP_COLLECTION;
         }
-        return $res;
+        if ($res === $this->meta) {
+            return null;
+        }
+        $biblatexRes       = clone $this;
+        $biblatexRes->meta = $res;
+        $biblatex          = $biblatexRes->getBiblatex($this->lang, null, $property);
+        return empty($biblatex) ? null : $biblatex;
     }
 
-    private function escapeBibtex(string $value): string {
+    private function escapeBiblatex(string $value): string {
         return $value; // it seems that most important clients, like citation.js, anyway don't support any form of escaping
     }
 }
-

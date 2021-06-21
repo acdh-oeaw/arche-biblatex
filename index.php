@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-use acdhOeaw\acdhRepoLib\RepoResourceResolver;
+use acdhOeaw\arche\lib\RepoResourceResolver;
 use acdhOeaw\arche\biblatex\Resource;
 use zozlak\logging\Log;
 
@@ -33,20 +33,20 @@ header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
 
 require_once 'vendor/autoload.php';
 
-$cfg                 = json_decode(json_encode(yaml_parse_file(__DIR__ . '/config.yaml')));
-$cfg->bibtex->schema = $cfg->schema;
-$log                 = new Log($cfg->bibtex->logFile, $cfg->bibtex->logLevel);
-$resolver            = new RepoResourceResolver($cfg, $log);
+$cfg                   = json_decode(json_encode(yaml_parse_file(__DIR__ . '/config.yaml')));
+$cfg->biblatex->schema = $cfg->schema;
+$log                   = new Log($cfg->biblatex->logFile, $cfg->biblatex->logLevel);
+$resolver              = new RepoResourceResolver($cfg, $log);
 
 $id   = filter_input(\INPUT_GET, 'id');
 $id   = preg_replace('|/metadata$|', '', $id);
-$lang = filter_input(\INPUT_GET, 'lang') ?? $cfg->bibtex->defaultLang;
-try {
-    $repoRes = $resolver->resolve($id);
-    $res     = new Resource($repoRes, $cfg->bibtex, $log);
-    $bibtex  = $res->getBibtex($lang, filter_input(INPUT_GET, 'override'));
+$lang = filter_input(\INPUT_GET, 'lang') ?? $cfg->biblatex->defaultLang;
+//try {
+    $repoRes  = $resolver->resolve($id);
+    $res      = new Resource($repoRes, $cfg->biblatex, $log);
+    $biblatex = $res->getBiblatex($lang, filter_input(INPUT_GET, 'override'));
     header('Content-Type: application/x-bibtex');
-    echo $bibtex;
-} catch (Throwable $e) {
-    $resolver->handleException($e, $log);
-}
+    echo $biblatex;
+//} catch (Throwable $e) {
+//    $resolver->handleException($e, $log);
+//}

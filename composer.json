@@ -13,8 +13,8 @@
     ],
     "require": {
         "zozlak/logging": "*",
-        "guzzlehttp/guzzle": "^6",
-        "acdh-oeaw/arche-lib": "^1.4",
+        "guzzlehttp/guzzle": "^6 | ^7",
+        "acdh-oeaw/arche-lib": "^2",
         "renanbr/bibtex-parser": "^2.1"
     },
     "autoload": {
