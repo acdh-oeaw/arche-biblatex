@@ -219,7 +219,7 @@ class Resource {
         }
         $year = substr((string) $this->getLiteral($keyCfg->year), 0, 4);
         $id   = preg_replace('|^.*/|', '', $this->res->getUri());
-        return "${actors}_${year}_${id}";
+        return preg_replace('/[^-a-zA-Z0-9_]/', '', "${actors}_${year}_${id}");
     }
 
     private function formatPerson(\EasyRdf\Resource $person): string {
