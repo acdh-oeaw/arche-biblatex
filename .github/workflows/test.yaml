@@ -1,0 +1,11 @@
+name: Test
+on: push
+jobs:
+  test and build dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: composer update
+      - name: test
+        run: vendor/bin/phpunit tests
