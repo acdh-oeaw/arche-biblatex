@@ -41,12 +41,12 @@ $resolver              = new RepoResourceResolver($cfg, $log);
 $id   = filter_input(\INPUT_GET, 'id');
 $id   = preg_replace('|/metadata$|', '', $id);
 $lang = filter_input(\INPUT_GET, 'lang') ?? $cfg->biblatex->defaultLang;
-//try {
+try {
     $repoRes  = $resolver->resolve($id);
     $res      = new Resource($repoRes, $cfg->biblatex, $log);
     $biblatex = $res->getBiblatex($lang, filter_input(INPUT_GET, 'override'));
     header('Content-Type: application/x-bibtex');
     echo $biblatex;
-//} catch (Throwable $e) {
-//    $resolver->handleException($e, $log);
-//}
+} catch (Throwable $e) {
+    $resolver->handleException($e, $log);
+}
