@@ -16,23 +16,10 @@ biblatex:
             - https://vocabs.acdh.oeaw.ac.at/schema#hasCreator
             - https://vocabs.acdh.oeaw.ac.at/schema#hasPrincipalInvestigator
             - https://vocabs.acdh.oeaw.ac.at/schema#hasContributor
+            - https://vocabs.acdh.oeaw.ac.at/schema#hasContact
             maxActors: 2
             year: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
         https://vocabs.acdh.oeaw.ac.at/schema#Resource:
-            # there are four types of mapping descriptions
-            # 1. bibtexProperty: rdfPropertyUri
-            #    maps to a first literal value of a given property (preferably in the defaultLang)
-            # 2. bibtexProperty: [list, of, rdf, property, URIs]
-            #    maps to a coma-separated list of all values of listed properties (preferably in the defaultLang)
-            # 3. src: parent/topCollection
-            #    property: bibtex property name (default the same as the current property)
-            #    takes the property value from a given bibtex property of a parent/top-level parent
-            # 4. bibtexProperty:
-            #      type: const/currentDate/eprint/literal/person/url (default literal)
-            #      properties: [list, of, rdf, property, URIs]
-            #      prefNmsp: preferred value namespace for type "url"
-            #                when provided only a single value is returned, preferably matching the given prefix
-            #      value: value when type "const"
             type: incollection
             title: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
             date: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
@@ -91,3 +78,4 @@ schema:
     label: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
     searchMatch: search://match
     searchCount: search://count
+

@@ -58,14 +58,14 @@ class Resource {
     const SRC_TOP_COLLECTION = 'topCollection';
 
     private \acdhOeaw\arche\lib\RepoResourceInterface $res;
-    private Log $log;
+    private ?Log $log;
     private object $config;
     private \EasyRdf\Resource $meta;
     private string $lang;
     private object $mapping;
 
     public function __construct(RepoResourceInterface $res, object $config,
-                                Log $log) {
+                                ?Log $log = null) {
         $this->res    = $res;
         $this->config = $config;
         $this->log    = $log;
