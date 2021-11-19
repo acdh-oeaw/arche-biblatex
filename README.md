@@ -30,8 +30,8 @@ Examples:
 
 * Creating a production image
   ```bash
-  # install dependencies
-  composer update
+  # install dependencies skipping development ones and optimizin autoloader
+  composer update --no-dev -o
   # prepare the docroot using build/config/arche.yaml as the config.yaml
   mkdir build/docroot && cp -R index.php src vendor build/docroot/ && cp build/config/arche.yaml build/docroot/config.yaml
   # build the image
