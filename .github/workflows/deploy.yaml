@@ -28,4 +28,5 @@ jobs:
       - name: push to docker hub
         run: docker push acdhch/arche-biblatex
       - name: redeploy on rancher
-        run: curl -X POST "${{ secrets.RANCHERURL }}?action=redeploy" -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}"
+        run: |
+          curl -X POST "${{ secrets.RANCHERURL }}?action=redeploy" -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}"
