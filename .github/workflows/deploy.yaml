@@ -1,7 +1,7 @@
 name: deploy on rancher
-on:
-  release:
-    types: [published]
+on: push
+#  release:
+ #  types: [published]
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,6 +19,7 @@ jobs:
       - name: test image
         run: |
           docker run -d --name arche-biblatex -p 8080:80 acdhch/arche-biblatex
+          sleep 1
           curl -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fgtrans'
       - name: authorize against docker hub
         uses: docker/login-action@v1
