@@ -28,35 +28,36 @@ namespace acdhOeaw\arche\biblatex\tests;
 
 use EasyRdf\Graph;
 use acdhOeaw\arche\biblatex\Resource as BibResource;
+
 /**
  * Description of ResourceTest
  *
  * @author zozlak
  */
 class ResourceTest extends \PHPUnit\Framework\TestCase {
-    
+
     // primary resource in the tests/meta.ttl
     const RES_URL = 'https://arche.acdh.oeaw.ac.at/api/139852';
-    
+
     public function testAll(): void {
-        $cfg = yaml_parse_file(__DIR__ . '/../config-sample.yaml');
-        $cfg = json_decode(json_encode($cfg));
+        $cfg                   = yaml_parse_file(__DIR__ . '/../config-sample.yaml');
+        $cfg                   = json_decode(json_encode($cfg));
         $cfg->biblatex->schema = $cfg->schema;
 
         $graph = new Graph();
         $graph->parseFile(__DIR__ . '/meta.ttl', 'text/turtle');
-        $res = new RepoResourceStub(self::RES_URL);
+        $res   = new RepoResourceStub(self::RES_URL);
         $res->setGraph($graph->resource(self::RES_URL));
-        
+
         $biblatex = new BibResource($res, $cfg->biblatex);
-        $output = $biblatex->getBiblatex('en');
+        $output   = $biblatex->getBiblatex('en');
         $expected = "@incollection{Steiner_2021_139852,
   title = {3. Länderkonferenz},
   date = {2021-07-26T18:52:22.864223},
   eprint = {21.11115/0000-000E-5942-4},
   eprinttype = {hdl},
   url = {https://hdl.handle.net/21.11115/0000-000E-5942-4},
-  urldate = {2021-11-19},
+  urldate = {" . date('Y-m-d') . "},
   author = {Steiner, Guenther},
   editoratype = {compiler},
   booktitle = {Die Große Transformation},
