@@ -1,6 +1,6 @@
 on: 
   push:
-    branches: [putYourOwnBranchNameHere]
+    branches: [zozlak]
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -29,4 +29,3 @@ jobs:
           docker push acdhch/arche-biblatex
           # redeploy on Rancher
           curl -i -X POST "${{ secrets.RANCHERURL }}?action=redeploy" -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}"
-
