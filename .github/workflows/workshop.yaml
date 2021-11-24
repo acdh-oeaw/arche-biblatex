@@ -1,0 +1,30 @@
+on: 
+  push:
+    branch: [zozlak]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: composer update -o
+      - name: test
+        run: vendor/bin/phpunit tests
+      - name: build docker image
+        run: docker build --rm -t acdhch/arche-biblatex .
+      - name: test docker image
+        run: |
+          docker run -d --name arche-biblatex -p 8080:80 acdhch/arche-biblatex
+          sleep 1
+          curl -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fgtrans'
+      - name: authorize against docker hub
+        uses: docker/login-action@v1
+        with:
+          username: zozlak
+          password: ${{ secrets.DOCKERHUBTOKEN }}
+      - name: push to docker hub
+        run: docker push acdhch/arche-biblatex
+      - name: redeploy on rancher
+        run: |
+          curl -i -X POST "${{ secrets.RANCHERURL }}?action=redeploy" -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}"
+
