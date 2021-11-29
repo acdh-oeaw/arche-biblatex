@@ -127,7 +127,7 @@ class Resource {
     }
 
     private function applyOverrides(array &$fields, ?string $override = null): void {
-        $biblatex = (string) ($override ?? $this->meta->getLiteral($this->config->biblatexProperty));
+        $biblatex = trim((string) ($override ?? $this->meta->getLiteral($this->config->biblatexProperty)));
         if (!empty($biblatex)) {
             if (substr($biblatex, 0, 1) !== '@') {
                 $biblatex = "@dataset{foo,\n$biblatex\n}";
