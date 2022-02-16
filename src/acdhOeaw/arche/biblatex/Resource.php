@@ -48,6 +48,7 @@ use acdhOeaw\arche\lib\RepoResourceInterface;
  */
 class Resource {
 
+    const NO_OVERRIDE        = 'NOOVERRIDE';
     const TYPE_CONST         = 'const';
     const TYPE_PERSON        = 'person';
     const TYPE_CURRENT_DATE  = 'currentDate';
@@ -58,7 +59,7 @@ class Resource {
     const SRC_TOP_COLLECTION = 'topCollection';
 
     private \acdhOeaw\arche\lib\RepoResourceInterface $res;
-    private ?Log $log;
+    private Log $log;
     private object $config;
     private \EasyRdf\Resource $meta;
     private string $lang;
@@ -68,7 +69,9 @@ class Resource {
                                 ?Log $log = null) {
         $this->res    = $res;
         $this->config = $config;
-        $this->log    = $log;
+        if ($log !== null) {
+            $this->log    = $log;
+        }
     }
 
     public function getBiblatex(string $lang, ?string $override = null,
@@ -90,7 +93,6 @@ class Resource {
             throw new RuntimeException("Repository resource is of unsupported class", 400);
         }
 
-        $firstLine = "@" . $this->mapping->type . "{" . $this->formatKey();
         $biblatex  = [];
         $mapping   = (array) $this->mapping;
         if (!empty($property)) {
@@ -109,7 +111,9 @@ class Resource {
             }
         }
 
+        // overrides from $.cfg.biblatexProperty in metadata
         $this->applyOverrides($biblatex);
+        // overrides from $override parameter (e.g. from HTTP request parameter)
         if (!empty($override)) {
             $this->applyOverrides($biblatex, $override);
         }
@@ -118,9 +122,11 @@ class Resource {
             return $biblatex[$property] ?? '';
         }
 
-        $output = $firstLine;
+        $output = "@" . $this->mapping->type . "{" . $this->formatKey();
         foreach ($biblatex as $key => $value) {
-            $output .= ",\n  $key = {" . $value . "}";
+            if (!empty($value)) {
+                $output .= ",\n  $key = {" . $value . "}";
+            }
         }
         $output .= "\n}\n";
         return $output;
@@ -129,8 +135,9 @@ class Resource {
     private function applyOverrides(array &$fields, ?string $override = null): void {
         $biblatex = trim((string) ($override ?? $this->meta->getLiteral($this->config->biblatexProperty)));
         if (!empty($biblatex)) {
+            $this->log?->debug("Applying overrides from " . ($override === null ? 'metadata' : 'parameter'));
             if (substr($biblatex, 0, 1) !== '@') {
-                $biblatex = "@dataset{foo,\n$biblatex\n}";
+                $biblatex = "@" . self::NO_OVERRIDE . "{" . self::NO_OVERRIDE . ",\n$biblatex\n}";
             }
 
             $listener = new BiblatexL();
@@ -146,6 +153,13 @@ class Resource {
                 foreach ($entries[0] as $key => $value) {
                     if (!in_array($key, ['type', '_type', '_original', 'citation-key'])) {
                         $fields[$key] = $value;
+                        $this->log?->debug("Overwriting field '$key' with '$value'");
+                    } elseif ($key === 'type' && $value !== self::NO_OVERRIDE) {
+                        $this->mapping->type = $value;
+                        $this->log?->debug("Overwriting entry type with '$value'");
+                    } elseif ($key === 'citation-key' && $value !== self::NO_OVERRIDE) {
+                        $this->config->mapping->key = $value;
+                        $this->log?->debug("Overwriting citation key with '$value'");
                     }
                 }
             } catch (BiblatexE1 $e) {
@@ -202,24 +216,29 @@ class Resource {
 
     private function formatKey(): string {
         $keyCfg  = $this->config->mapping->key;
-        $surname = $this->config->mapping->person->surname;
-        $actors  = [];
-        foreach ($keyCfg->actors as $property) {
-            foreach ($this->meta->allResources($property) as $actor) {
-                $actors[] = $this->getLiteral($surname, $actor);
+        if (is_object($keyCfg)) {
+            $surname = $this->config->mapping->person->surname;
+            $actors  = [];
+            foreach ($keyCfg->actors as $property) {
+                foreach ($this->meta->allResources($property) as $actor) {
+                    $actors[] = $this->getLiteral($surname, $actor);
+                }
+                if (count($actors) > 0) {
+                    break;
+                }
             }
-            if (count($actors) > 0) {
-                break;
+            if (count($actors) > $keyCfg->maxActors) {
+                $actors = $actors[0] . '_' . $this->config->etal;
+            } else {
+                $actors = join('_', $actors);
             }
-        }
-        if (count($actors) > $keyCfg->maxActors) {
-            $actors = $actors[0] . '_' . $this->config->etal;
+            $year = substr((string) $this->getLiteral($keyCfg->year), 0, 4);
+            $id   = preg_replace('|^.*/|', '', $this->res->getUri());
+            $key  = "${actors}_${year}_${id}";
         } else {
-            $actors = join('_', $actors);
+            $key = $keyCfg;
         }
-        $year = substr((string) $this->getLiteral($keyCfg->year), 0, 4);
-        $id   = preg_replace('|^.*/|', '', $this->res->getUri());
-        return preg_replace('/[^-a-zA-Z0-9_]/', '', "${actors}_${year}_${id}");
+        return preg_replace('/[^-a-zA-Z0-9_]/', '', $key);
     }
 
     private function formatPerson(\EasyRdf\Resource $person): string {

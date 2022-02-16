@@ -16,6 +16,33 @@ An ARCHE dissemination service providing mapping of resource's metadata to BibLa
 
 `http://deploymentUrl/?id=url-encoded-arche-resource-identifier&lang=preferredLanguageCode`
 
+Optionally an `override` query parameter can be also supplied providing URL-encoded BibLaTeX bibliographic entry or its fragment.
+It works in the same way as an override coming from ARCHE resource metadata (details below), just is applied after it.
+
+# Override rules
+
+* The base BibLaTeX bibliographic entry is created according to the mapping provided in the `config.yaml`.
+  The mapping is chosen based on the ARCHE resource RDF class.
+* Then overrides comming from the ARCHE resource metadata property specified by the `config.yaml->biblatex->biblatexProperty` configuration option are applied.
+* Finally overrides comming from the `override` request parameter are applied.
+
+
+Details:
+
+* All bibliographic entry information including entry type and citation key are overrided.
+  If you want to preserve the entry type and/or citation key:
+    * either use the "magic" `NOOVERRIDE` type/citation key value, e.g.
+      ```
+      @NOOVERRIDE{NOOVERRIDE,
+        fieldToOverride = {overriding value},
+      }
+      ```
+    * or provide just BibLaTeX fields skipping the bibliographic entry header (and the final curly bracket), e.g.
+      ```
+      fieldToOverride = {overriding value},
+      ```
+* If you want a field to be skipped from the output, override it with an empty value.
+
 # Docker deployment
 
 The `build/docker` directory contains a Dockerfile defining a runtime environment for the service.
@@ -30,7 +57,7 @@ Examples:
 
 * Creating a production image
   ```bash
-  # install dependencies skipping development ones and optimizin autoloader
+  # install dependencies skipping development ones and optimizing autoloader
   composer update --no-dev -o
   # prepare the docroot using build/config/arche.yaml as the config.yaml
   mkdir build/docroot && cp -R index.php src vendor build/docroot/ && cp build/config/arche.yaml build/docroot/config.yaml
