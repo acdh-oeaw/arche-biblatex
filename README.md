@@ -27,7 +27,7 @@ It works in the same way as an override coming from ARCHE resource metadata (det
 * Finally overrides comming from the `override` request parameter are applied.
 
 
-Details:
+## Details
 
 * All bibliographic entry information including entry type and citation key are overrided.
   If you want to preserve the entry type and/or citation key:
@@ -43,7 +43,9 @@ Details:
       ```
 * If you want a field to be skipped from the output, override it with an empty value.
 
-Example - please compare the output for the sample resource (https://hdl.handle.net/21.11115/0000-000E-753C-C).
+## Example
+
+Compare the output for the sample resource (https://hdl.handle.net/21.11115/0000-000E-753C-C).  
 (please note the same data which are provided in the `override` request parameter below can be also provided in the "custom citation" resource metadata property)
 
 * Default: https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C`
