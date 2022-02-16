@@ -43,6 +43,30 @@ Details:
       ```
 * If you want a field to be skipped from the output, override it with an empty value.
 
+Example - please compare the output for the sample resource (https://hdl.handle.net/21.11115/0000-000E-753C-C).
+(please note the same data which are provided in the `override` request parameter below can be also provided in the "custom citation" resource metadata property)
+
+* Default: https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C`
+* With entry type set to `book` but citation key preserved, `author` field overrided with a new value as well as `booktitle` and `bookauthor` fields removed:
+  https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C&override=%40book%7BNOOVERRIDE%2C%0A%20%20author%20%3D%20%7BDoe%2C%20John%7D%0A%2C%20%20booktitle%20%3D%20%7B%7D%2C%20bookauthor%20%3D%20%7B%7D%2C%0A%7D  
+  The non-URL-encoded `override` parameter value () used here is:
+  ```
+  @book{NOOVERRIDE,
+    author = {Doe, John},
+    booktitle = {},
+    bookauthor = {},
+  }
+  ```
+* With `author` field overrided with a new value as well as `booktitle` and `bookauthor` fields removed.
+  As automatically created entry type and citation key are to be kept, a short syntax skipping the BibLaTeX entry header is used.
+  https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C&override=author%20%3D%20%7BDoe%2C%20John%7D%0A%2Cbooktitle%20%3D%20%7B%7D%2Cbookauthor%20%3D%20%7B%7D%2C
+  The non-URL-encoded `override` parameter value () used here is:
+  ```
+  author = {Doe, John},  
+  booktitle = {}, 
+  bookauthor = {},
+  ```
+
 # Docker deployment
 
 The `build/docker` directory contains a Dockerfile defining a runtime environment for the service.
