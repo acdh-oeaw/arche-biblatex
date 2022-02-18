@@ -151,15 +151,18 @@ class Resource {
                     throw new RuntimeException("Exactly one BibLaTeX entry expected but " . count($entries) . " parsed: $biblatex");
                 }
                 foreach ($entries[0] as $key => $value) {
-                    if (!in_array($key, ['type', '_type', '_original', 'citation-key'])) {
+                    if (!in_array($key, ['_type', '_original', 'citation-key', 'type'])) {
                         $fields[$key] = $value;
                         $this->log?->debug("Overwriting field '$key' with '$value'");
-                    } elseif ($key === 'type' && $value !== self::NO_OVERRIDE) {
+                    } elseif ($key === '_type' && $value !== self::NO_OVERRIDE) {
                         $this->mapping->type = $value;
                         $this->log?->debug("Overwriting entry type with '$value'");
                     } elseif ($key === 'citation-key' && $value !== self::NO_OVERRIDE) {
                         $this->config->mapping->key = $value;
                         $this->log?->debug("Overwriting citation key with '$value'");
+                    } elseif ($key === 'type' and $value !== ($entries[0]['_type'] ?? '')) {
+                        $fields[$key] = $value;
+                        $this->log?->debug("Overwriting field '$key' with '$value'");
                     }
                 }
             } catch (BiblatexE1 $e) {
