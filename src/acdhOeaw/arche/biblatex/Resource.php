@@ -211,7 +211,7 @@ class Resource {
             case self::TYPE_EPRINT:
                 return preg_replace('|^https?://[^/]*/|', '', (string) $this->getLiteral($definition->properties[0]));
             case self::TYPE_URL:
-                return $this->formatAll($definition->properties, null, true, $definition->prefNmsp ?? null);
+                return $this->formatAll($definition->properties, null, true, $definition->reqNmsp ?? $definition->prefNmsp ?? null, isset($definition->reqNmsp));
             default:
                 throw new RuntimeException('Unsupported property type ' . $definition->type, 500);
         }
@@ -272,11 +272,15 @@ class Resource {
      * 
      * @param string[] $properties
      * @param \EasyRdf\Resource $resource
+     * @param bool $onlyUrl
+     * @param string | null $nmsp
+     * @param bool $reqNmsp
      * @return string|null
      */
     private function formatAll(array $properties,
                                \EasyRdf\Resource $resource = null,
-                               bool $onlyUrl = false, ?string $nmsp = null): ?string {
+                               bool $onlyUrl = false, ?string $nmsp = null,
+                               bool $reqNmsp = false): ?string {
         $resource  = $resource ?? $this->meta;
         $literals  = [];
         $resources = [];
@@ -317,7 +321,7 @@ class Resource {
                     return $i;
                 }
             }
-            return count($values) > 0 ? $values[0] : '';
+            return count($values) > 0 && !$reqNmsp ? $values[0] : '';
         }
         return join(', ', $values);
     }
