@@ -1,6 +1,5 @@
 name: deploy on rancher
 on:
-  push: ~
   release:
     types: [published]
 env:
