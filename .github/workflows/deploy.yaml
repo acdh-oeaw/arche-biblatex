@@ -34,7 +34,7 @@ jobs:
         run: docker push acdhch/arche-biblatex
       - name: redeploy on rancher
         run: |
-          BASE_URL=`curl -s -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "${{ env.RANCHER_API_BASE }}/projects" | jq -r ".data[] | select(.name == \"${{ env.RANCHER_PROJECT }}\") | .links.workloads"`
-          echo "$BASE_URL/deployment:${{ env.RANCHER_NAMESPACE }}:${{ env.RANCHER_NAMESPACE }}?action=redeploy"
-          curl -i -X POST -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "$BASE_URL/deployment:${{ env.RANCHER_NAMESPACE }}:${{ env.RANCHER_NAMESPACE }}?action=redeploy"
+          BASE_URL=`curl -s -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "$RANCHER_API_BASE/projects" | jq -r ".data[] | select(.name == \"$RANCHER_PROJECT\") | .links.workloads"`
+          echo "$BASE_URL/deployment:$RANCHER_NAMESPACE:$RANCHER_NAMESPACE?action=redeploy"
+          curl -i -X POST -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "$BASE_URL/deployment:$RANCHER_NAMESPACE:$RANCHER_NAMESPACE?action=redeploy"
 
