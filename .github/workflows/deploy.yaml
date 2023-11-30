@@ -32,6 +32,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: push to docker hub
         run: docker push acdhch/arche-biblatex
+      - uses: mxschmitt/action-tmate@v3
       - name: redeploy on rancher
         run: |
           echo "$RANCHER_API_BASE/projects"
