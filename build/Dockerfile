@@ -9,3 +9,4 @@ RUN apt-get update &&\
     docker-php-ext-enable yaml &&\
     apt-get clean
 COPY docroot /var/www/html
+EXPOSE 80
