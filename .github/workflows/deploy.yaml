@@ -19,7 +19,7 @@ jobs:
       - name: build docker image
         run: |
           composer update --no-dev -o
-          mkdir build/docroot && cp -R index.php src build/docroot/ && cp build/config/arche.yaml build/docroot/config.yaml
+          mkdir build/docroot && cp -R !(build) build/docroot && cp build/config/arche.yaml build/docroot/config.yaml
           docker build --rm -t "acdhch/$RANCHER_NAMESPACE:latest" --build-arg VARIANT=production --label "buildUrl=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" build
       - name: test image
         run: |
