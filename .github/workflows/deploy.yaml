@@ -1,7 +1,11 @@
 name: deploy on rancher
 on: 
+  push: ~
   release:
     types: [published]
+env:
+  RANCHER_PROJECT: Dissemination services
+  RANCHER_NAMESPACE: arche-biblatex
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -30,5 +34,7 @@ jobs:
         run: docker push acdhch/arche-biblatex
       - name: redeploy on rancher
         run: |
-          curl -i -X POST "${{ secrets.RANCHERURL }}?action=redeploy" -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}"
+          BASE_URL=`curl -s -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "${{ env.RANCHER_API_BASE }}/projects" | jq -r ".data[] | select(.name == \"${{ env.RANCHER_PROJECT }}\") | .links.workloads"`
+          echo "$BASE_URL/deployment:${{ env.RANCHER_NAMESPACE }}:${{ env.RANCHER_NAMESPACE }}?action=redeploy"
+          curl -i -X POST -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "$BASE_URL/deployment:${{ env.RANCHER_NAMESPACE }}:${{ env.RANCHER_NAMESPACE }}?action=redeploy"
 
