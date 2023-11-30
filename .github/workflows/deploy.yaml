@@ -32,7 +32,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: push to docker hub
-        run: docker push acdhch/arche-biblatex
+        run: docker push "acdhch/$RANCHER_NAMESPACE:latest"
       - name: redeploy on rancher
         run: |
           BASE_URL=`curl -s -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "$RANCHER_API_BASE/projects" | jq -r ".data[] | select(.name == \"$RANCHER_PROJECT\") | .links.workloads"`
