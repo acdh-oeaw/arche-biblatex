@@ -1,4 +1,4 @@
-# arche-bibtex
+# arche-biblatex
 
 An ARCHE dissemination service providing mapping of resource's metadata to BibLaTeX bibliographic entries.
 
