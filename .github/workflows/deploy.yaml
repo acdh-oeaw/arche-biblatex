@@ -18,12 +18,12 @@ jobs:
           vendor/bin/phpunit tests
       - name: build docker image
         run: |
-          composer update --no-dev -o
+          git reset --hard HEAD
           mkdir build/docroot && cp -R !(build) build/docroot && cp build/config/arche.yaml build/docroot/config.yaml
           docker build --rm -t "acdhch/$RANCHER_NAMESPACE:latest" --build-arg VARIANT=production --label "buildUrl=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" build
       - name: test image
         run: |
-          docker run -d --name "$RANCHER_NAMESPAC" -p 8080:80 "acdhch/$RANCHER_NAMESPACE:latest"
+          docker run -d --name "$RANCHER_NAMESPACE" -p 8080:80 "acdhch/$RANCHER_NAMESPACE:latest"
           sleep 1
           curl -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fgtrans'
       - name: authorize against docker hub
