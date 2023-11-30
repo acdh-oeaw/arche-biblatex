@@ -258,7 +258,7 @@ class Resource {
     private function getLiteral(string $property,
                                 \EasyRdf\Resource $resource = null): ?string {
         $resource = $resource ?? $this->meta;
-        $value    = $resource->getLiteral($property, $this->lang) ?? $resource->getLiteral($property);
+        $value    = $resource->getLiteral($property, $this->lang) ?? ($resource->getLiteral($property, 'und') ?? $resource->getLiteral($property));
         return $value !== null ? (string) $value : null;
     }
 
