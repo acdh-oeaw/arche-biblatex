@@ -1,5 +1,5 @@
 name: deploy on rancher
-on: 
+on:
   push: ~
   release:
     types: [published]
@@ -20,10 +20,10 @@ jobs:
         run: |
           composer update --no-dev -o
           mkdir build/docroot && cp -R index.php src vendor build/docroot/ && cp build/config/arche.yaml build/docroot/config.yaml
-          docker build --rm -t acdhch/arche-biblatex --build-arg VARIANT=production --label "buildUrl=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" build
+          docker build --rm -t "acdhch/$RANCHER_NAMESPACE:latest" --build-arg VARIANT=production --label "buildUrl=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" build
       - name: test image
         run: |
-          docker run -d --name arche-biblatex -p 8080:80 acdhch/arche-biblatex
+          docker run -d --name "acdhch/$RANCHER_NAMESPACE:latest" -p 8080:80 acdhch/arche-biblatex
           sleep 1
           curl -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fgtrans'
       - name: authorize against docker hub
@@ -35,9 +35,6 @@ jobs:
         run: docker push acdhch/arche-biblatex
       - name: redeploy on rancher
         run: |
-          echo "$RANCHER_API_BASE/projects"
-          echo ".data[] | select(.name == \"$RANCHER_PROJECT\") | .links.workloads"
           BASE_URL=`curl -s -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "$RANCHER_API_BASE/projects" | jq -r ".data[] | select(.name == \"$RANCHER_PROJECT\") | .links.workloads"`
-          echo "$BASE_URL/deployment:$RANCHER_NAMESPACE:$RANCHER_NAMESPACE?action=redeploy"
           curl -i -X POST -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "$BASE_URL/deployment:$RANCHER_NAMESPACE:$RANCHER_NAMESPACE?action=redeploy"
 
