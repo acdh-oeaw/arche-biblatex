@@ -15,7 +15,7 @@ jobs:
         run: |
           composer update --no-dev -o
           mkdir build/docroot && cp -R index.php src vendor build/docroot/ && cp build/config/arche.yaml build/docroot/config.yaml
-          docker build --rm -t acdhch/arche-biblatex --build-arg VARIANT=production build
+          docker build --rm -t acdhch/arche-biblatex --build-arg VARIANT=production --label "buildUrl=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" build
       - name: test image
         run: |
           docker run -d --name arche-biblatex -p 8080:80 acdhch/arche-biblatex
