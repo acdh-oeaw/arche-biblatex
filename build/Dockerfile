@@ -2,11 +2,11 @@ FROM php:8.1-apache
 # VARIANT must be "production" or "development"
 ARG VARIANT
 RUN cp "$PHP_INI_DIR/php.ini-$VARIANT" "$PHP_INI_DIR/php.ini"
-# install the php-yaml extenstion
-RUN apt-get update &&\
-    apt-get install -y libyaml-dev &&\
-    pecl install yaml &&\
-    docker-php-ext-enable yaml &&\
-    apt-get clean
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions &&\
+    install-php-extensions dom xsl xml @composer
 COPY docroot /var/www/html
+RUN cd /var/www/html &&\
+    composer update -o --no-dev &&\
+    chown -R www-data:www-data /var/www/html
 EXPOSE 80
