@@ -4,6 +4,7 @@ on:
   release:
     types: [published]
 env:
+  RANCHER_API_BASE: https://rancher.acdh-dev.oeaw.ac.at/v3
   RANCHER_PROJECT: Dissemination services
   RANCHER_NAMESPACE: arche-biblatex
 jobs:
@@ -32,7 +33,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: push to docker hub
         run: docker push acdhch/arche-biblatex
-      - uses: mxschmitt/action-tmate@v3
       - name: redeploy on rancher
         run: |
           echo "$RANCHER_API_BASE/projects"
