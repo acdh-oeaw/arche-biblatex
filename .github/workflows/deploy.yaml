@@ -25,7 +25,7 @@ jobs:
         run: |
           docker run -d --name "$RANCHER_NAMESPACE" -p 8080:80 "acdhch/$RANCHER_NAMESPACE:latest"
           sleep 1
-          curl -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fgtrans'
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fgtrans'
       - name: authorize against docker hub
         uses: docker/login-action@v3
         with:
