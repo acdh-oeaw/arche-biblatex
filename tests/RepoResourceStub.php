@@ -28,8 +28,11 @@ namespace acdhOeaw\arche\biblatex\tests;
 
 use acdhOeaw\arche\lib\RepoInterface;
 use acdhOeaw\arche\lib\RepoResourceInterface;
-use EasyRdf\Graph;
-use EasyRdf\Resource;
+use quickRdf\DatasetNode;
+use quickRdf\DataFactory as DF;
+use rdfInterface\TermInterface;
+use rdfInterface\DatasetInterface;
+use rdfInterface\DatasetNodeInterface;
 
 /**
  * Description of RepoResourceStub
@@ -38,54 +41,59 @@ use EasyRdf\Resource;
  */
 class RepoResourceStub implements RepoResourceInterface {
 
-    public string $url;
-    public Resource $meta;
+    public DatasetNodeInterface $meta;
+    public RepoInterface | null $repo;
 
     public function __construct(string $url, ?RepoInterface $repo = null) {
-        $this->url  = $url;
+        $this->meta = new DatasetNode(DF::namedNode($url));
+        $this->repo = $repo;
     }
 
     public function getClasses(): array {
-        
+        throw new \RuntimeException();
     }
 
-    public function getGraph(): Resource {
+    public function getGraph(): DatasetNodeInterface {
         return $this->meta;
     }
 
     public function getIds(): array {
-        
+        throw new \RuntimeException();
     }
 
-    public function getMetadata(): Resource {
+    public function getMetadata(): DatasetNodeInterface {
         return $this->meta;
     }
 
     public function getRepo(): RepoInterface {
-        
+        throw new \RuntimeException();
     }
 
-    public function getUri(): string {
-        return $this->url;
+    public function getUri(): TermInterface {
+        return $this->meta->getNode();
     }
 
     public function isA(string $class): bool {
-        
+        throw new \RuntimeException();
     }
 
+    /**
+     * 
+     * @param array<string> $resourceProperties
+     * @param array<string> $relativesProperties
+     */
     public function loadMetadata(bool $force = false,
                                  string $mode = self::META_RESOURCE,
-                                 string $parentProperty = null): void {
-        
+                                 ?string $parentProperty = null,
+                                 array $resourceProperties = [],
+                                 array $relativesProperties = []): void {
     }
 
-    public function setGraph(Resource $resource): void {
-        $this->meta = $resource;
-        $this->url  = $resource->getUri();
+    public function setGraph(DatasetInterface $resource): void {
+        $this->meta = $this->meta->withDataset($resource);
     }
 
-    public function setMetadata(Resource $metadata): void {
+    public function setMetadata(DatasetNodeInterface $metadata): void {
         $this->meta = $metadata;
-        $this->url  = $metadata->getUri();
     }
 }

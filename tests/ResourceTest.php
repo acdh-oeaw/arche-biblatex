@@ -26,7 +26,9 @@
 
 namespace acdhOeaw\arche\biblatex\tests;
 
-use EasyRdf\Graph;
+use quickRdf\Dataset;
+use quickRdf\DataFactory as DF;
+use quickRdfIo\Util as RdfIoUtil;
 use acdhOeaw\arche\biblatex\Resource as BibResource;
 
 /**
@@ -44,10 +46,10 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $cfg                   = json_decode(json_encode($cfg));
         $cfg->biblatex->schema = $cfg->schema;
 
-        $graph = new Graph();
-        $graph->parseFile(__DIR__ . '/meta.ttl', 'text/turtle');
+        $graph = new Dataset();
+        $graph->add(RdfIoUtil::parse(__DIR__ . '/meta.ttl', new DF(), 'text/turtle'));
         $res   = new RepoResourceStub(self::RES_URL);
-        $res->setGraph($graph->resource(self::RES_URL));
+        $res->setGraph($graph);
 
         $biblatex = new BibResource($res, $cfg->biblatex);
         $output   = $biblatex->getBiblatex('en');

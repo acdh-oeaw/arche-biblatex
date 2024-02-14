@@ -71,7 +71,7 @@ ns1:41760 ns2:hasIdentifier ns4:universitaet-wien;
     ns2:hasRegion "Wien"@de;
     ns2:hasUpdatedDate "2021-07-27T08:36:29.826804"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
     ns2:hasIdentifier <https://d-nb.info/gnd/2024703-5>;
-    ns2:hasUpdatedRole "pandorfer";
+    ns2:hasUpdatedRole "pandorfer" ;
     ns2:hasRegion "Vienna"@en;
     ns2:hasCountry "Österreich"@de;
     ns2:hasCity "Wien"@de;

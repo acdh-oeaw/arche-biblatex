@@ -32,6 +32,12 @@ use RenanBr\BibTexParser\Parser as BiblatexP;
 use RenanBr\BibTexParser\Processor\TagNameCaseProcessor as BiblatexCP;
 use RenanBr\BibTexParser\Exception\ParserException as BiblatexE1;
 use RenanBr\BibTexParser\Exception\ProcessorException as BiblatexE2;
+use rdfInterface\DatasetInterface;
+use rdfInterface\TermInterface;
+use rdfInterface\LiteralInterface;
+use termTemplates\PredicateTemplate as PT;
+use termTemplates\QuadTemplate as QT;
+use termTemplates\LiteralTemplate as LT;
 use zozlak\logging\Log;
 use zozlak\RdfConstants as RDF;
 use acdhOeaw\arche\lib\RepoResourceInterface;
@@ -58,10 +64,11 @@ class Resource {
     const SRC_PARENT         = 'parent';
     const SRC_TOP_COLLECTION = 'topCollection';
 
-    private \acdhOeaw\arche\lib\RepoResourceInterface $res;
-    private Log $log;
+    private RepoResourceInterface $res;
+    private ?Log $log = null;
     private object $config;
-    private \EasyRdf\Resource $meta;
+    private DatasetInterface $meta;
+    private TermInterface $node;
     private string $lang;
     private object $mapping;
 
@@ -69,9 +76,7 @@ class Resource {
                                 ?Log $log = null) {
         $this->res    = $res;
         $this->config = $config;
-        if ($log !== null) {
-            $this->log    = $log;
-        }
+        $this->log    = $log;
     }
 
     public function getBiblatex(string $lang, ?string $override = null,
@@ -79,10 +84,11 @@ class Resource {
         $this->lang = $lang;
         if (!isset($this->meta)) {
             $this->res->loadMetadata(true, RepoResourceInterface::META_PARENTS);
-            $this->meta = $this->res->getGraph();
+            $this->node = $this->res->getUri();
+            $this->meta = $this->res->getGraph()->getDataset();
         }
 
-        $classes = $this->meta->allResources(RDF::RDF_TYPE);
+        $classes = $this->meta->listObjects(new QT($this->node, RDF::RDF_TYPE))->getValues();
         foreach ($classes as $c) {
             if (isset($this->config->mapping->$c)) {
                 $this->mapping = $this->config->mapping->$c;
@@ -93,8 +99,8 @@ class Resource {
             throw new RuntimeException("Repository resource is of unsupported class", 400);
         }
 
-        $biblatex  = [];
-        $mapping   = (array) $this->mapping;
+        $biblatex = [];
+        $mapping  = (array) $this->mapping;
         if (!empty($property)) {
             if (isset($mapping[$property])) {
                 $mapping = [$property => $mapping[$property]];
@@ -132,8 +138,15 @@ class Resource {
         return $output;
     }
 
+    /**
+     * 
+     * @param array<string, string> $fields
+     * @param string|null $override
+     * @return void
+     * @throws RuntimeException
+     */
     private function applyOverrides(array &$fields, ?string $override = null): void {
-        $biblatex = trim((string) ($override ?? $this->meta->getLiteral($this->config->biblatexProperty)));
+        $biblatex = trim((string) ($override ?? (string) $this->meta->getObject(new PT($this->config->biblatexProperty))));
         if (!empty($biblatex)) {
             $this->log?->debug("Applying overrides from " . ($override === null ? 'metadata' : 'parameter'));
             if (substr($biblatex, 0, 1) !== '@') {
@@ -184,7 +197,7 @@ class Resource {
     private function formatProperty($definition): ?string {
         // simple cases
         if (is_string($definition)) {
-            return $this->getLiteral($definition);
+            return $this->getLiteral(new PT($definition));
         }
         if (is_array($definition)) {
             return $this->formatAll($definition);
@@ -209,7 +222,7 @@ class Resource {
             case self::TYPE_PERSON:
                 return $this->formatPersons($definition->properties);
             case self::TYPE_EPRINT:
-                return preg_replace('|^https?://[^/]*/|', '', (string) $this->getLiteral($definition->properties[0]));
+                return preg_replace('|^https?://[^/]*/|', '', (string) $this->getLiteral(new PT($definition->properties[0])));
             case self::TYPE_URL:
                 return $this->formatAll($definition->properties, null, true, $definition->reqNmsp ?? $definition->prefNmsp ?? null, isset($definition->reqNmsp));
             default:
@@ -218,13 +231,14 @@ class Resource {
     }
 
     private function formatKey(): string {
-        $keyCfg  = $this->config->mapping->key;
+        $keyCfg = $this->config->mapping->key;
         if (is_object($keyCfg)) {
-            $surname = $this->config->mapping->person->surname;
+            $surname = new PT($this->config->mapping->person->surname);
             $actors  = [];
             foreach ($keyCfg->actors as $property) {
-                foreach ($this->meta->allResources($property) as $actor) {
-                    $actors[] = $this->getLiteral($surname, $actor);
+                $tmpl = new QT($this->node, $property);
+                foreach ($this->meta->listObjects($tmpl) as $actor) {
+                    $actors[] = $this->getLiteral($surname->withSubject($actor));
                 }
                 if (count($actors) > 0) {
                     break;
@@ -235,30 +249,35 @@ class Resource {
             } else {
                 $actors = join('_', $actors);
             }
-            $year = substr((string) $this->getLiteral($keyCfg->year), 0, 4);
-            $id   = preg_replace('|^.*/|', '', $this->res->getUri());
-            $key  = "${actors}_${year}_${id}";
+            $year = substr((string) $this->getLiteral(new PT($keyCfg->year)), 0, 4);
+            $id   = preg_replace('|^.*/|', '', (string) $this->node);
+            $key  = $actors . '_' . $year . '_' . $id;
         } else {
             $key = $keyCfg;
         }
         return preg_replace('/[^-a-zA-Z0-9_]/', '', $key);
     }
 
-    private function formatPerson(\EasyRdf\Resource $person): string {
+    private function formatPerson(TermInterface $person): string {
         $cfg     = $this->config->mapping->person;
-        $name    = $this->getLiteral($cfg->name, $person);
-        $surname = $this->getLiteral($cfg->surname, $person);
+        $tmpl    = new QT($person);
+        $name    = $this->getLiteral($tmpl->withPredicate($cfg->name));
+        $surname = $this->getLiteral($tmpl->withPredicate($cfg->surname));
         if (!empty($name) || !empty($surname)) {
             return "$surname, $name";
         } else {
-            return '{' . $this->getLiteral($cfg->label, $person) . '}';
+            return '{' . $this->getLiteral($tmpl->withPredicate($cfg->label)) . '}';
         }
     }
 
-    private function getLiteral(string $property,
-                                \EasyRdf\Resource $resource = null): ?string {
-        $resource = $resource ?? $this->meta;
-        $value    = $resource->getLiteral($property, $this->lang) ?? ($resource->getLiteral($property, 'und') ?? $resource->getLiteral($property));
+    private function getLiteral(QT | PT $tmpl): ?string {
+        if ($tmpl instanceof PT || $tmpl->getSubject() === null) {
+            $tmpl = $tmpl->withSubject($this->node);
+        }
+        $tmplLang = $tmpl->withObject(new LT(null, LT::ANY, $this->lang));
+        $tmplUnd  = $tmpl->withObject(new LT(null, LT::ANY, 'und'));
+        $tmplAny  = $tmpl->withObject(new LT(null, LT::ANY));
+        $value    = $this->meta->getObject($tmplLang) ?? ($this->meta->getObject($tmplUnd) ?? $this->meta->getObject($tmplAny));
         return $value !== null ? (string) $value : null;
     }
 
@@ -270,33 +289,24 @@ class Resource {
      * 
      * Empty values are discarded.
      * 
-     * @param string[] $properties
-     * @param \EasyRdf\Resource $resource
+     * @param array<string> $properties
+     * @param TermInterface|null $resource
      * @param bool $onlyUrl
      * @param string | null $nmsp
      * @param bool $reqNmsp
-     * @return string|null
+     * @return string
      */
     private function formatAll(array $properties,
-                               \EasyRdf\Resource $resource = null,
+                               TermInterface | null $resource = null,
                                bool $onlyUrl = false, ?string $nmsp = null,
-                               bool $reqNmsp = false): ?string {
-        $resource  = $resource ?? $this->meta;
+                               bool $reqNmsp = false): string {
+        $tmpl      = new QT($resource ?? $this->node);
         $literals  = [];
         $resources = [];
         $values    = [];
         foreach ($properties as $property) {
-            foreach ($resource->all($property) as $i) {
-                if ($i instanceof \EasyRdf\Resource) {
-                    if ($onlyUrl) {
-                        $value = $i->getUri();
-                    } else {
-                        $value = $this->getLiteral($this->config->schema->label, $i);
-                    }
-                    if (!empty($value)) {
-                        $resources[] = strpos($value, ',') !== false ? '{' . $value . '}' : $value;
-                    }
-                } else {
+            foreach ($this->meta->listObjects($tmpl->withPredicate($property)) as $i) {
+                if ($i instanceof LiteralInterface) {
                     $value = (string) $i;
                     if (!empty($value)) {
                         $lang = (string) $i->getLang();
@@ -304,6 +314,15 @@ class Resource {
                             $literals[$lang] = [];
                         }
                         $values[$lang][] = strpos($value, ',') !== false ? '{' . $value . '}' : $value;
+                    }
+                } else {
+                    if ($onlyUrl) {
+                        $value = (string) $i;
+                    } else {
+                        $value = $this->getLiteral(new QT($i, $this->config->schema->label));
+                    }
+                    if (!empty($value)) {
+                        $resources[] = strpos($value, ',') !== false ? '{' . $value . '}' : $value;
                     }
                 }
             }
@@ -328,17 +347,17 @@ class Resource {
 
     /**
      * 
-     * @param string[] $properties
-     * @param \EasyRdf\Resource $resource
-     * @return string|null
+     * @param array<string> $properties
+     * @param TermInterface|string|null $resource
+     * @return string
      */
     private function formatPersons(array $properties,
-                                   \EasyRdf\Resource $resource = null): ?string {
-        $resource = $resource ?? $this->meta;
-        $persons  = [];
+                                   TermInterface | string | null $resource = null): string {
+        $tmpl    = new QT($resource ?? $this->node);
+        $persons = [];
         foreach ($properties as $property) {
-            foreach ($resource->allResources($property) as $person) {
-                $pid = $person->getUri();
+            foreach ($this->meta->listObjects($tmpl->withPredicate($property)) as $person) {
+                $pid = (string) $person;
                 if (!isset($persons[$pid])) {
                     $persons[$pid] = $this->formatPerson($person);
                 }
@@ -349,16 +368,16 @@ class Resource {
 
     private function formatParent(string $type, string $property): ?string {
         $continue = true;
-        $res      = $this->meta;
-        while ($continue && ($parent   = $res->getResource($this->config->schema->parent))) {
-            $res      = $parent;
+        $tmpl     = new QT($this->node, $this->config->schema->parent);
+        while ($continue && ($parent   = $this->meta->getObject($tmpl))) {
+            $tmpl     = $tmpl->withSubject($parent);
             $continue &= $type === self::SRC_TOP_COLLECTION;
         }
-        if ($res === $this->meta) {
+        if ($this->node->equals($tmpl->getSubject())) {
             return null;
         }
         $biblatexRes       = clone $this;
-        $biblatexRes->meta = $res;
+        $biblatexRes->node = $tmpl->getSubject();
         $biblatex          = $biblatexRes->getBiblatex($this->lang, null, $property);
         return empty($biblatex) ? null : $biblatex;
     }
