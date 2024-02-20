@@ -26,9 +26,10 @@
 
 namespace acdhOeaw\arche\biblatex\tests;
 
-use quickRdf\Dataset;
+use quickRdf\DatasetNode;
 use quickRdf\DataFactory as DF;
 use quickRdfIo\Util as RdfIoUtil;
+use acdhOeaw\arche\lib\RepoResourceInterface;
 use acdhOeaw\arche\biblatex\Resource as BibResource;
 
 /**
@@ -46,11 +47,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $cfg                   = json_decode(json_encode($cfg));
         $cfg->biblatex->schema = $cfg->schema;
 
-        $graph = new Dataset();
-        $graph->add(RdfIoUtil::parse(__DIR__ . '/meta.ttl', new DF(), 'text/turtle'));
-        $res   = new RepoResourceStub(self::RES_URL);
-        $res->setGraph($graph);
-
+        $res      = $this->getRepoResourceStub(__DIR__ . '/meta.ttl');
         $biblatex = new BibResource($res, $cfg->biblatex);
         $output   = $biblatex->getBiblatex('en');
         $expected = "@incollection{Steiner_2021_139852,
@@ -70,5 +67,15 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
 }
 ";
         $this->assertEquals($expected, $output);
+    }
+
+    private function getRepoResourceStub(string $metaPath): RepoResourceInterface {
+        $graph = new DatasetNode(DF::namedNode(self::RES_URL));
+        $graph->add(RdfIoUtil::parse($metaPath, new DF(), 'text/turtle'));
+        $res   = $this->createStub(RepoResourceInterface::class);
+        $res->method('getUri')->willReturn($graph->getNode());
+        $res->method('getGraph')->willReturn($graph);
+        $res->method('getMetadata')->willReturn($graph);
+        return $res;
     }
 }
