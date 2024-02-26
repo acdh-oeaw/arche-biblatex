@@ -146,7 +146,7 @@ class Resource {
      * @throws RuntimeException
      */
     private function applyOverrides(array &$fields, ?string $override = null): void {
-        $biblatex = trim((string) ($override ?? (string) $this->meta->getObject(new PT($this->config->biblatexProperty))));
+        $biblatex = trim((string) ($override ?? (string) $this->meta->getObject(new QT($this->node, $this->config->biblatexProperty))));
         if (!empty($biblatex)) {
             $this->log?->debug("Applying overrides from " . ($override === null ? 'metadata' : 'parameter'));
             if (substr($biblatex, 0, 1) !== '@') {
