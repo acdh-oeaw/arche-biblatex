@@ -91,7 +91,7 @@ class Resource {
     public function __construct(RepoResourceInterface $res, object $config,
                                 ?LoggerInterface $log = null) {
         $this->res    = $res;
-        $this->schema = $res->getRepo()->getSchema();
+        $this->schema = new Schema($config->schema);
         $this->config = $config;
         $this->log    = $log;
     }

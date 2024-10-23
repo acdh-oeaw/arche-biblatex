@@ -21,6 +21,9 @@ biblatex:
     defaultLang: en
     biblatexProperty: https://vocabs.acdh.oeaw.ac.at/schema#hasCustomCitation
     etal: etal
+    schema:
+        label: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
+        parent: https://vocabs.acdh.oeaw.ac.at/schema#isPartOf
     mapping:
         person:
             name: https://vocabs.acdh.oeaw.ac.at/schema#hasFirstName
