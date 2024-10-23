@@ -34,22 +34,23 @@ use acdhOeaw\arche\lib\dissCache\ResponseCache;
 use acdhOeaw\arche\lib\dissCache\RepoWrapperGuzzle;
 use acdhOeaw\arche\lib\dissCache\RepoWrapperRepoInterface;
 use acdhOeaw\arche\biblatex\Resource;
+use acdhOeaw\arche\biblatex\BiblatexException;
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
 
 require_once 'vendor/autoload.php';
 
-$cfg                   = json_decode(json_encode(yaml_parse_file(__DIR__ . '/config.yaml')));
+$config = json_decode(json_encode(yaml_parse_file(__DIR__ . '/config.yaml')));
 
 $logId = sprintf("%08d", rand(0, 99999999));
 $tmpl  = "{TIMESTAMP}:$logId:{LEVEL}\t{MESSAGE}";
-$log   = new Log($cfg->log->file, $cfg->log->level, $tmpl);
+$log   = new Log($config->log->file, $config->log->level, $tmpl);
 try {
     $t0 = microtime(true);
 
     $id      = $_GET['id'] ?? 'no identifer provided';
-    $log->info("Getting thumbnail for $id");
+    $log->info("Getting biblatex for $id");
     $allowed = false;
     foreach ($config->allowedNmsp as $i) {
         if (str_starts_with($id, $i)) {
@@ -58,7 +59,7 @@ try {
         }
     }
     if (!$allowed) {
-        throw new ThumbnailException("Requested resource $id not in allowed namespace", 400);
+        throw new BiblatexException("Requested resource $id not in allowed namespace", 400);
     }
 
     $cache = new CachePdo($config->db);
@@ -70,17 +71,17 @@ try {
     $repos[] = new RepoWrapperGuzzle(false);
 
     $searchConfig                         = new SearchConfig();
-    $searchConfig->metadataMode           = $cfg->biblatex->metadataMode ?? RepoResourceInterface::META_RESOURCE;
-    $searchConfig->metadataParentProperty = $cfg->biblatex->parentProperty ?? '';
-    $searchConfig->resourceProperties     = $cfg->biblatex->resourceProperties ?? [];
-    $searchConfig->relativesProperties    = $cfg->biblatex->relativesProperties ?? [];
+    $searchConfig->metadataMode           = $config->biblatex->metadataMode ?? RepoResourceInterface::META_RESOURCE;
+    $searchConfig->metadataParentProperty = $config->biblatex->parentProperty ?? '';
+    $searchConfig->resourceProperties     = $config->biblatex->resourceProperties ?? [];
+    $searchConfig->relativesProperties    = $config->biblatex->relativesProperties ?? [];
 
     $clbck = fn($res, $param) => Resource::cacheHandler($res, $param, $config->biblatex, $log);
     $ttl   = $config->cache->ttl;
     $cache = new ResponseCache($cache, $clbck, $ttl->resource, $ttl->response, $repos, $searchConfig, $log);
 
     $param    = [
-        $_GET['lang'] ?? $cfg->biblatex->defaultLang,
+        $_GET['lang'] ?? $config->biblatex->defaultLang,
         $_GET['override'] ?? null,
     ];
     $response = $cache->getResponse($param, $id);
@@ -88,7 +89,7 @@ try {
     $log->info("Ended in " . round(microtime(true) - $t0, 3) . " s");
 } catch (\Throwable $e) {
     $code              = $e->getCode();
-    $ordinaryException = $e instanceof NotFound;
+    $ordinaryException = $e instanceof BiblatexException || $e instanceof NotFound;
     $logMsg            = "$code: " . $e->getMessage() . ($ordinaryException ? '' : "\n" . $e->getFile() . ":" . $e->getLine() . "\n" . $e->getTraceAsString());
     $log->error($logMsg);
 

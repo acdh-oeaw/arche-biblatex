@@ -18,10 +18,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: json,yaml,pdo,pdo_sqlite
+          coverage: xdebug
       - name: test
         run: |
           composer update
           XDEBUG_MODE=coverage vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations --display-notices --display-warnings
+      - name: prepare arche-prod and arche-cur configs
+        run: |
+          mkdir tmp && cd tmp
+          composer require -n zozlak/yaml-merge
+          curl https://arche.acdh.oeaw.ac.at/api/describe > prod.yaml
+          curl https://arche-curation.acdh-dev.oeaw.ac.at/api/describe > cur.yaml
+          vendor/bin/yaml-edit.php --src prod.yaml --src '{"dbConn": {"guest": "pgsql: host=10.6.16.94 port=5433 user=arche_thumbnails dbname=arche_prod"}}' ../archeProd.yaml
+          vendor/bin/yaml-edit.php --src cur.yaml  --src '{"dbConn": {"guest": "pgsql: host=10.6.16.94 port=5433 user=arche_thumbnails dbname=arche_cur"}}'  ../archeCur.yaml
+          cd .. && rm -fR tmp
       - name: build docker image
         run: |
           git reset --hard HEAD
@@ -30,9 +44,9 @@ jobs:
           docker build --rm -t "acdhch/$RANCHER_NAMESPACE:latest" --build-arg VARIANT=production --label "buildUrl=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" build
       - name: test image
         run: |
-          docker run -d --name "$RANCHER_NAMESPACE" -p 8080:80 "acdhch/$RANCHER_NAMESPACE:latest"
+          docker run -d --name "$RANCHER_NAMESPACE" -v `pwd`/tests/config.yaml:/var/www/html/config.yaml -p 8080:80 "acdhch/$RANCHER_NAMESPACE:latest"
           sleep 1
-          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fgtrans'
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
       - name: authorize against docker hub
         uses: docker/login-action@v3
         with:

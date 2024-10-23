@@ -6,7 +6,9 @@ ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/do
 RUN chmod +x /usr/local/bin/install-php-extensions &&\
     install-php-extensions yaml @composer
 COPY docroot /var/www/html
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN cd /var/www/html &&\
     composer update -o --no-dev &&\
     chown -R www-data:www-data /var/www/html
 EXPOSE 80
+ENTRYPOINT entrypoint.sh

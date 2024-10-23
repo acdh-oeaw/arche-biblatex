@@ -6,9 +6,7 @@ cache:
   ttl:
     resource: 3600     # 1 hour
     response: 31536000 # 1 year
-repoDb:
-- archeProd.yaml
-- archeCur.yaml
+repoDb: []
 allowedNmsp:
 - https://id.acdh.oeaw.ac.at/
 - https://arche.acdh.oeaw.ac.at/api/
