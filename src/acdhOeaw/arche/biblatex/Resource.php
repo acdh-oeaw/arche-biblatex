@@ -378,6 +378,7 @@ class Resource {
                 }
             }
         }
+        sort($persons);
         return join(' and ', $persons);
     }
 

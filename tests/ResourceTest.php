@@ -69,7 +69,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   author = {Steiner, Guenther},
   editoratype = {compiler},
   booktitle = {Die Große Transformation},
-  bookauthor = {{} and Steiner, Guenther and {} and {} and {}},
+  bookauthor = {Steiner, Guenther and {} and {} and {} and {}},
   note = {sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602},
   keywords = {Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit},
   abstract = {Das Protokoll behandelt die 3. Länderkonferenz.}
@@ -98,7 +98,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   author = {Steiner, Guenther},
   editoratype = {compiler},
   booktitle = {Die Große Transformation},
-  bookauthor = {Megner, Karl and Steiner, Guenther and Helfert, Veronika and Garstenauer, Theresa and Becker, Peter},
+  bookauthor = {Becker, Peter and Garstenauer, Theresa and Helfert, Veronika and Megner, Karl and Steiner, Guenther},
   note = {sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602},
   keywords = {Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit},
   abstract = {Das Protokoll behandelt die 3. Länderkonferenz.}
