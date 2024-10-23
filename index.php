@@ -24,9 +24,16 @@
  * THE SOFTWARE.
  */
 
-use acdhOeaw\arche\lib\RepoResourceResolver;
-use acdhOeaw\arche\biblatex\Resource;
 use zozlak\logging\Log;
+use acdhOeaw\arche\lib\RepoDb;
+use acdhOeaw\arche\lib\SearchConfig;
+use acdhOeaw\arche\lib\RepoResourceInterface;
+use acdhOeaw\arche\lib\exception\NotFound;
+use acdhOeaw\arche\lib\dissCache\CachePdo;
+use acdhOeaw\arche\lib\dissCache\ResponseCache;
+use acdhOeaw\arche\lib\dissCache\RepoWrapperGuzzle;
+use acdhOeaw\arche\lib\dissCache\RepoWrapperRepoInterface;
+use acdhOeaw\arche\biblatex\Resource;
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
@@ -34,19 +41,64 @@ header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
 require_once 'vendor/autoload.php';
 
 $cfg                   = json_decode(json_encode(yaml_parse_file(__DIR__ . '/config.yaml')));
-$cfg->biblatex->schema = $cfg->schema;
-$log                   = new Log($cfg->biblatex->logFile, $cfg->biblatex->logLevel);
-$resolver              = new RepoResourceResolver($cfg, $log);
 
-$id   = filter_input(\INPUT_GET, 'id');
-$id   = preg_replace('|/metadata$|', '', $id);
-$lang = filter_input(\INPUT_GET, 'lang') ?? $cfg->biblatex->defaultLang;
+$logId = sprintf("%08d", rand(0, 99999999));
+$tmpl  = "{TIMESTAMP}:$logId:{LEVEL}\t{MESSAGE}";
+$log   = new Log($cfg->log->file, $cfg->log->level, $tmpl);
 try {
-    $repoRes  = $resolver->resolve($id);
-    $res      = new Resource($repoRes, $cfg->biblatex, $log);
-    $biblatex = $res->getBiblatex($lang, filter_input(INPUT_GET, 'override'));
-    header('Content-Type: application/x-bibtex');
-    echo $biblatex;
-} catch (Throwable $e) {
-    $resolver->handleException($e, $log);
+    $t0 = microtime(true);
+
+    $id      = $_GET['id'] ?? 'no identifer provided';
+    $log->info("Getting thumbnail for $id");
+    $allowed = false;
+    foreach ($config->allowedNmsp as $i) {
+        if (str_starts_with($id, $i)) {
+            $allowed = true;
+            break;
+        }
+    }
+    if (!$allowed) {
+        throw new ThumbnailException("Requested resource $id not in allowed namespace", 400);
+    }
+
+    $cache = new CachePdo($config->db);
+
+    $repos = [];
+    foreach ($config->repoDb ?? [] as $i) {
+        $repos[] = new RepoWrapperRepoInterface(RepoDb::factory($i), true);
+    }
+    $repos[] = new RepoWrapperGuzzle(false);
+
+    $searchConfig                         = new SearchConfig();
+    $searchConfig->metadataMode           = $cfg->biblatex->metadataMode ?? RepoResourceInterface::META_RESOURCE;
+    $searchConfig->metadataParentProperty = $cfg->biblatex->parentProperty ?? '';
+    $searchConfig->resourceProperties     = $cfg->biblatex->resourceProperties ?? [];
+    $searchConfig->relativesProperties    = $cfg->biblatex->relativesProperties ?? [];
+
+    $clbck = fn($res, $param) => Resource::cacheHandler($res, $param, $config->biblatex, $log);
+    $ttl   = $config->cache->ttl;
+    $cache = new ResponseCache($cache, $clbck, $ttl->resource, $ttl->response, $repos, $searchConfig, $log);
+
+    $param    = [
+        $_GET['lang'] ?? $cfg->biblatex->defaultLang,
+        $_GET['override'] ?? null,
+    ];
+    $response = $cache->getResponse($param, $id);
+    $response->send();
+    $log->info("Ended in " . round(microtime(true) - $t0, 3) . " s");
+} catch (\Throwable $e) {
+    $code              = $e->getCode();
+    $ordinaryException = $e instanceof NotFound;
+    $logMsg            = "$code: " . $e->getMessage() . ($ordinaryException ? '' : "\n" . $e->getFile() . ":" . $e->getLine() . "\n" . $e->getTraceAsString());
+    $log->error($logMsg);
+
+    if ($code < 400 || $code >= 500) {
+        $code = 500;
+    }
+    http_response_code($code);
+    if ($ordinaryException) {
+        echo $e->getMessage() . "\n";
+    } else {
+        echo "Internal Server Error\n";
+    }
 }

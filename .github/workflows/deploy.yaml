@@ -15,7 +15,7 @@ jobs:
       - name: test
         run: |
           composer update
-          vendor/bin/phpunit tests
+          vendor/bin/phpunit
       - name: build docker image
         run: |
           git reset --hard HEAD
@@ -38,4 +38,11 @@ jobs:
         run: |
           BASE_URL=`curl -s -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "$RANCHER_API_BASE/projects" | jq -r ".data[] | select(.name == \"$RANCHER_PROJECT\") | .links.workloads"`
           curl -i -X POST -H "Authorization: Bearer ${{ secrets.RANCHERTOKEN }}" "$BASE_URL/deployment:$RANCHER_NAMESPACE:$RANCHER_NAMESPACE?action=redeploy"
+      - name: coveralls
+        run: |
+          export COVERALLS_RUN_LOCALLY=1
+          export COVERALLS_REPO_TOKEN=${{ secrets.coverallsToken }}
+          rm -fR composer.json composer.lock vendor
+          composer require php-coveralls/php-coveralls
+          php vendor/bin/php-coveralls -v
 

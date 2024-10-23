@@ -4,3 +4,5 @@
 /config.yaml
 /log
 /build/docroot
+/build/logs
+/.phpunit.cache

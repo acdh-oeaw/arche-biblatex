@@ -27,6 +27,7 @@
 namespace acdhOeaw\arche\biblatex;
 
 use RuntimeException;
+use Psr\Log\LoggerInterface;
 use RenanBr\BibTexParser\Listener as BiblatexL;
 use RenanBr\BibTexParser\Parser as BiblatexP;
 use RenanBr\BibTexParser\Processor\TagNameCaseProcessor as BiblatexCP;
@@ -38,9 +39,11 @@ use rdfInterface\LiteralInterface;
 use termTemplates\PredicateTemplate as PT;
 use termTemplates\QuadTemplate as QT;
 use termTemplates\LiteralTemplate as LT;
+use acdhOeaw\arche\lib\Schema;
+use acdhOeaw\arche\lib\RepoResourceInterface;
+use acdhOeaw\arche\lib\dissCache\ResponseCacheItem;
 use zozlak\logging\Log;
 use zozlak\RdfConstants as RDF;
-use acdhOeaw\arche\lib\RepoResourceInterface;
 
 /**
  * Maps ARCHE resource metadata to a BibLaTeX bibliographic entry.
@@ -64,8 +67,21 @@ class Resource {
     const SRC_PARENT         = 'parent';
     const SRC_TOP_COLLECTION = 'topCollection';
 
+    /**
+     * @param array<mixed> $param
+     */
+    static public function cacheHandler(RepoResourceInterface $res,
+                                        array $param, object $config,
+                                        ?LoggerInterface $log = null): ResponseCacheItem {
+
+        $bibRes   = new self($res, $config, $log);
+        $biblatex = $bibRes->getBiblatex(...$param);
+        return new ResponseCacheItem($biblatex, 200, ['Content-Type' => 'application/x-bibtex']);
+    }
+
     private RepoResourceInterface $res;
-    private ?Log $log = null;
+    private Schema $schema;
+    private ?LoggerInterface $log = null;
     private object $config;
     private DatasetInterface $meta;
     private TermInterface $node;
@@ -73,8 +89,9 @@ class Resource {
     private object $mapping;
 
     public function __construct(RepoResourceInterface $res, object $config,
-                                ?Log $log = null) {
+                                ?LoggerInterface $log = null) {
         $this->res    = $res;
+        $this->schema = $res->getRepo()->getSchema();
         $this->config = $config;
         $this->log    = $log;
     }
@@ -319,7 +336,7 @@ class Resource {
                     if ($onlyUrl) {
                         $value = (string) $i;
                     } else {
-                        $value = $this->getLiteral(new QT($i, $this->config->schema->label));
+                        $value = $this->getLiteral(new QT($i, $this->schema->label));
                     }
                     if (!empty($value)) {
                         $resources[] = strpos($value, ',') !== false ? '{' . $value . '}' : $value;
@@ -342,6 +359,7 @@ class Resource {
             }
             return count($values) > 0 && !$reqNmsp ? $values[0] : '';
         }
+        sort($values);
         return join(', ', $values);
     }
 
@@ -368,7 +386,7 @@ class Resource {
 
     private function formatParent(string $type, string $property): ?string {
         $continue = true;
-        $tmpl     = new QT($this->node, $this->config->schema->parent);
+        $tmpl     = new QT($this->node, $this->schema->parent);
         while ($continue && ($parent   = $this->meta->getObject($tmpl))) {
             $tmpl     = $tmpl->withSubject($parent);
             $continue &= $type === self::SRC_TOP_COLLECTION;
