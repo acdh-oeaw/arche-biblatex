@@ -21,7 +21,7 @@ jobs:
       - name: test
         run: |
           composer update
-          vendor/bin/phpunit
+          XDEBUG_MODE=coverage vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations --display-notices --display-warnings
       - name: build docker image
         run: |
           git reset --hard HEAD
