@@ -94,18 +94,15 @@ class Resource {
         $this->schema = new Schema($config->schema);
         $this->config = $config;
         $this->log    = $log;
+        $this->node   = $this->res->getUri();
+        $this->meta   = $this->res->getGraph()->getDataset();
     }
 
     public function getBiblatex(string $lang, ?string $override = null,
                                 ?string $property = null): string {
         $this->lang = $lang;
-        if (!isset($this->meta)) {
-            $this->res->loadMetadata(true, RepoResourceInterface::META_PARENTS);
-            $this->node = $this->res->getUri();
-            $this->meta = $this->res->getGraph()->getDataset();
-        }
-
-        $classes = $this->meta->listObjects(new QT($this->node, RDF::RDF_TYPE))->getValues();
+        
+        $classes    = $this->meta->listObjects(new QT($this->node, RDF::RDF_TYPE))->getValues();
         foreach ($classes as $c) {
             if (isset($this->config->mapping->$c)) {
                 $this->mapping = $this->config->mapping->$c;

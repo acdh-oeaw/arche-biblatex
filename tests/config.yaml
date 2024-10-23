@@ -14,7 +14,7 @@ allowedNmsp:
 - https://arche-dev.acdh-dev.oeaw.ac.at.at/api/
 - https://hdl.handle.net/
 biblatex:
-    metadataMode: resource
+    metadataMode: parents
     parentProperty: ""
     resourceProperties: []
     relativesProperties: []
