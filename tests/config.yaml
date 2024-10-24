@@ -1,23 +1,23 @@
-db: sqlite:/tmp/__db__.sqlite
-log:
-  file: /tmp/__log__
-  level: debug
-cache:
+dissCacheService:
+  db: sqlite:/tmp/__db__.sqlite
+  log:
+    file: /tmp/__log__
+    level: debug
   ttl:
     resource: 3600     # 1 hour
     response: 31536000 # 1 year
-repoDb: []
-allowedNmsp:
-- https://id.acdh.oeaw.ac.at/
-- https://arche.acdh.oeaw.ac.at/api/
-- https://arche-curation.acdh-dev.oeaw.ac.at/api/
-- https://arche-dev.acdh-dev.oeaw.ac.at.at/api/
-- https://hdl.handle.net/
+  repoDb: []
+  allowedNmsp:
+  - https://id.acdh.oeaw.ac.at/
+  - https://arche.acdh.oeaw.ac.at/api/
+  - https://arche-curation.acdh-dev.oeaw.ac.at/api/
+  - https://arche-dev.acdh-dev.oeaw.ac.at.at/api/
+  - https://hdl.handle.net/
+  metadataMode: parents
+  parentProperty: ""
+  resourceProperties: []
+  relativesProperties: []
 biblatex:
-    metadataMode: parents
-    parentProperty: ""
-    resourceProperties: []
-    relativesProperties: []
     defaultLang: en
     biblatexProperty: https://vocabs.acdh.oeaw.ac.at/schema#hasCustomCitation
     etal: etal

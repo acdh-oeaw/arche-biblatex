@@ -1,25 +1,25 @@
-db: sqlite:/var/www/html/db.sqlite
-log:
-  file: /var/www/html/log
-  level: debug
-cache:
+dissCacheService:
+  db: sqlite:/var/www/html/db.sqlite
+  log:
+    file: /var/www/html/log
+    level: debug
   ttl:
     resource: 3600     # 1 hour
     response: 31536000 # 1 year
-repoDb:
-- archeProd.yaml
-- archeCur.yaml
-allowedNmsp:
-- https://id.acdh.oeaw.ac.at/
-- https://arche.acdh.oeaw.ac.at/api/
-- https://arche-curation.acdh-dev.oeaw.ac.at/api/
-- https://arche-dev.acdh-dev.oeaw.ac.at.at/api/
-- https://hdl.handle.net/
+  repoDb:
+  - archeProd.yaml
+  - archeCur.yaml
+  allowedNmsp:
+  - https://id.acdh.oeaw.ac.at/
+  - https://arche.acdh.oeaw.ac.at/api/
+  - https://arche-curation.acdh-dev.oeaw.ac.at/api/
+  - https://arche-dev.acdh-dev.oeaw.ac.at.at/api/
+  - https://hdl.handle.net/
+  metadataMode: parents
+  parentProperty: ""
+  resourceProperties: []
+  relativesProperties: []
 biblatex:
-    metadataMode: parents
-    parentProperty: ""
-    resourceProperties: []
-    relativesProperties: []
     defaultLang: en
     biblatexProperty: https://vocabs.acdh.oeaw.ac.at/schema#hasCustomCitation
     etal: etal

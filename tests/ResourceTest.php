@@ -137,17 +137,17 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         foreach (glob('/tmp/cachePdo_*') as $i) {
             unlink($i);
         }
+        $cfg                                  = self::$cfg->dissCacheService;
         $db                                   = new CachePdo('sqlite::memory:');
         $clbck                                = fn($res, $param) => BibResource::cacheHandler($res, $param, self::$cfg->biblatex);
-        $ttl                                  = self::$cfg->cache->ttl;
         $repos                                = [new RepoWrapperGuzzle(false)];
         $searchConfig                         = new SearchConfig();
-        $searchConfig->metadataMode           = self::$cfg->biblatex->metadataMode;
-        $searchConfig->metadataParentProperty = self::$cfg->biblatex->parentProperty;
-        $searchConfig->resourceProperties     = self::$cfg->biblatex->resourceProperties;
-        $searchConfig->relativesProperties    = self::$cfg->biblatex->relativesProperties;
+        $searchConfig->metadataMode           = $cfg->metadataMode;
+        $searchConfig->metadataParentProperty = $cfg->parentProperty;
+        $searchConfig->resourceProperties     = $cfg->resourceProperties;
+        $searchConfig->relativesProperties    = $cfg->relativesProperties;
 
-        $cache = new ResponseCache($db, $clbck, $ttl->resource, $ttl->response, $repos, $searchConfig);
+        $cache = new ResponseCache($db, $clbck, $cfg->ttl->resource, $cfg->ttl->response, $repos, $searchConfig);
 
         return $cache;
     }

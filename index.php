@@ -24,82 +24,21 @@
  * THE SOFTWARE.
  */
 
-use zozlak\logging\Log;
-use acdhOeaw\arche\lib\RepoDb;
-use acdhOeaw\arche\lib\SearchConfig;
-use acdhOeaw\arche\lib\RepoResourceInterface;
-use acdhOeaw\arche\lib\exception\NotFound;
-use acdhOeaw\arche\lib\dissCache\CachePdo;
-use acdhOeaw\arche\lib\dissCache\ResponseCache;
-use acdhOeaw\arche\lib\dissCache\RepoWrapperGuzzle;
-use acdhOeaw\arche\lib\dissCache\RepoWrapperRepoInterface;
+use acdhOeaw\arche\lib\dissCache\Service;
 use acdhOeaw\arche\biblatex\Resource;
-use acdhOeaw\arche\biblatex\BiblatexException;
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
 
 require_once 'vendor/autoload.php';
 
-$config = json_decode(json_encode(yaml_parse_file(__DIR__ . '/config.yaml')));
-
-$logId = sprintf("%08d", rand(0, 99999999));
-$tmpl  = "{TIMESTAMP}:$logId:{LEVEL}\t{MESSAGE}";
-$log   = new Log($config->log->file, $config->log->level, $tmpl);
-try {
-    $t0 = microtime(true);
-
-    $id      = $_GET['id'] ?? 'no identifer provided';
-    $log->info("Getting biblatex for $id");
-    $allowed = false;
-    foreach ($config->allowedNmsp as $i) {
-        if (str_starts_with($id, $i)) {
-            $allowed = true;
-            break;
-        }
-    }
-    if (!$allowed) {
-        throw new BiblatexException("Requested resource $id not in allowed namespace", 400);
-    }
-
-    $cache = new CachePdo($config->db);
-
-    $repos = [];
-    foreach ($config->repoDb ?? [] as $i) {
-        $repos[] = new RepoWrapperRepoInterface(RepoDb::factory($i), true);
-    }
-    $repos[] = new RepoWrapperGuzzle(false);
-
-    $searchConfig                         = new SearchConfig();
-    $searchConfig->metadataMode           = $config->biblatex->metadataMode ?? RepoResourceInterface::META_RESOURCE;
-    $searchConfig->metadataParentProperty = $config->biblatex->parentProperty ?? '';
-    $searchConfig->resourceProperties     = $config->biblatex->resourceProperties ?? [];
-    $searchConfig->relativesProperties    = $config->biblatex->relativesProperties ?? [];
-
-    $clbck = fn($res, $param) => Resource::cacheHandler($res, $param, $config->biblatex, $log);
-    $ttl   = $config->cache->ttl;
-    $cache = new ResponseCache($cache, $clbck, $ttl->resource, $ttl->response, $repos, $searchConfig, $log);
-
-    $param    = [
-        $_GET['lang'] ?? $config->biblatex->defaultLang,
-        $_GET['override'] ?? null,
-    ];
-    $response = $cache->getResponse($param, $id);
-    $response->send();
-    $log->info("Ended in " . round(microtime(true) - $t0, 3) . " s");
-} catch (\Throwable $e) {
-    $code              = $e->getCode();
-    $ordinaryException = $e instanceof BiblatexException || $e instanceof NotFound;
-    $logMsg            = "$code: " . $e->getMessage() . ($ordinaryException ? '' : "\n" . $e->getFile() . ":" . $e->getLine() . "\n" . $e->getTraceAsString());
-    $log->error($logMsg);
-
-    if ($code < 400 || $code >= 500) {
-        $code = 500;
-    }
-    http_response_code($code);
-    if ($ordinaryException) {
-        echo $e->getMessage() . "\n";
-    } else {
-        echo "Internal Server Error\n";
-    }
-}
+$service  = new Service(__DIR__ . '/config.yaml');
+$config   = $service->getConfig();
+$clbck    = fn($res, $param) => Resource::cacheHandler($res, $param, $config->biblatex, $service->getLog());
+$service->setCallback($clbck);
+$param    = [
+    $_GET['lang'] ?? $config->biblatex->defaultLang,
+    $_GET['override'] ?? null,
+];
+$response = $service->serveRequest($_GET['id'] ?? '', $param);
+$response->send();
