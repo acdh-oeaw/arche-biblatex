@@ -23,9 +23,14 @@ jobs:
           php-version: 8.3
           extensions: json,yaml,pdo,pdo_sqlite
           coverage: xdebug
-      - name: test
+      - name: composer
         run: |
           composer update
+      #- name: phpstan
+      #  run: |
+      #    vendor/bin/phpstan analyze -l 6 src index.php
+      - name: phpunit
+        run: |
           XDEBUG_MODE=coverage vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations --display-notices --display-warnings
       - name: prepare arche-prod and arche-cur configs
         run: |
@@ -49,6 +54,7 @@ jobs:
           curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
           curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
       - name: authorize against docker hub
+        if: github.event_name == 'release' && github.event.action == 'published' || inputs.deploy
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
