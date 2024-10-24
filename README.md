@@ -1,5 +1,8 @@
 # arche-biblatex
 
+[![Build status](https://github.com/acdh-oeaw/arche-biblatex/actions/workflows/deploy.yaml/badge.svg)](https://github.com/acdh-oeaw/arche-biblatex/actions/workflows/deploy.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/acdh-oeaw/arche-biblatex/badge.svg?branch=master)](https://coveralls.io/github/acdh-oeaw/arche-biblatex?branch=master)
+
 An ARCHE dissemination service providing mapping of resource's metadata to BibLaTeX bibliographic entries.
 
 # Installation
