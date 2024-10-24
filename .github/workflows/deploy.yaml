@@ -52,7 +52,7 @@ jobs:
           sleep 1
           curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
           curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
-      - uses: acdh-oeaw/arche_cicd_finish_action@0.1
+      - uses: acdh-oeaw/arche_cicd_finish_action@main
         with:
           pushAndRedeploy: ${{ github.event_name == 'release' && github.event.action == 'published' || inputs.deploy }}
           dockerhubLogin: ${{ secrets.DOCKER_USERNAME }}
