@@ -20,6 +20,7 @@ jobs:
         with:
           phpExtensions: json,yaml,pdo,pdo_sqlite
           phpstanLevel: 0
+          prepareRepoConfig: true
       - name: build docker image
         run: |
           mkdir build/docroot && cp -R `ls -1 | grep -v ^build` build/docroot/ && cp build/config/arche.yaml build/docroot/config.yaml
