@@ -16,34 +16,12 @@ jobs:
   testAndDeploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: acdh-oeaw/arche_cicd_start_action@main
         with:
-          php-version: 8.3
-          extensions: json,yaml,pdo,pdo_sqlite
-          coverage: xdebug
-      - name: composer
-        run: |
-          composer update
-      #- name: phpstan
-      #  run: |
-      #    vendor/bin/phpstan analyze -l 6 src index.php
-      - name: phpunit
-        run: |
-          XDEBUG_MODE=coverage vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations --display-notices --display-warnings
-      - name: prepare arche-prod and arche-cur configs
-        run: |
-          mkdir tmp && cd tmp
-          composer require -n zozlak/yaml-merge
-          curl https://arche.acdh.oeaw.ac.at/api/describe > prod.yaml
-          curl https://arche-curation.acdh-dev.oeaw.ac.at/api/describe > cur.yaml
-          vendor/bin/yaml-edit.php --src prod.yaml --src '{"dbConn": {"guest": "pgsql: host=10.6.16.94 port=5433 user=arche_thumbnails dbname=arche_prod"}}' ../archeProd.yaml
-          vendor/bin/yaml-edit.php --src cur.yaml  --src '{"dbConn": {"guest": "pgsql: host=10.6.16.94 port=5433 user=arche_thumbnails dbname=arche_cur"}}'  ../archeCur.yaml
-          cd .. && rm -fR tmp
+          phpExtensions: json,yaml,pdo,pdo_sqlite
+          phpstanLevel: 0
       - name: build docker image
         run: |
-          git reset --hard HEAD
-          rm -fR vendor
           mkdir build/docroot && cp -R `ls -1 | grep -v ^build` build/docroot/ && cp build/config/arche.yaml build/docroot/config.yaml
           docker build --rm -t "acdhch/$RANCHER_NAMESPACE:latest" --build-arg VARIANT=production --label "buildUrl=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" build
       - name: test image
