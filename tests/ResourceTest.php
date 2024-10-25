@@ -115,21 +115,10 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $graph = new DatasetNode(DF::namedNode(self::RES_URL));
         $graph->add(RdfIoUtil::parse($metaPath, new DF(), 'text/turtle'));
 
-        $schema = new Schema([
-            "id"          => "https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier",
-            "parent"      => "https://vocabs.acdh.oeaw.ac.at/schema#isPartOf",
-            "label"       => "https://vocabs.acdh.oeaw.ac.at/schema#hasTitle",
-            "searchMatch" => "search://match",
-            "searchCount" => "search://count",
-        ]);
-        $repo   = $this->createStub(RepoInterface::class);
-        $repo->method('getSchema')->willReturn($schema);
-
         $res = $this->createStub(RepoResourceInterface::class);
         $res->method('getUri')->willReturn($graph->getNode());
         $res->method('getGraph')->willReturn($graph);
         $res->method('getMetadata')->willReturn($graph);
-        $res->method('getRepo')->willReturn($repo);
         return $res;
     }
 
