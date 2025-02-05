@@ -45,7 +45,10 @@ biblatex:
             type: dataset
             title: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
             date: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
-            publisher: https://vocabs.acdh.oeaw.ac.at/schema#hasHosting
+            publisher:
+                type: literal
+                properties:
+                - https://vocabs.acdh.oeaw.ac.at/schema#hasHosting
             eprint:
                 type: eprint
                 properties:
@@ -86,7 +89,10 @@ biblatex:
             type: incollection
             title: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
             date: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
-            publisher: https://vocabs.acdh.oeaw.ac.at/schema#hasHosting
+            publisher:
+                type: literal
+                properties:
+                - https://vocabs.acdh.oeaw.ac.at/schema#hasHosting
             eprint:
                 type: eprint
                 properties:
@@ -130,7 +136,10 @@ biblatex:
             type: incollection
             title: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
             date: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
-            publisher: https://vocabs.acdh.oeaw.ac.at/schema#hasHosting
+            publisher:
+                type: literal
+                properties:
+                - https://vocabs.acdh.oeaw.ac.at/schema#hasHosting
             eprint:
                 type: eprint
                 properties:
@@ -175,7 +184,10 @@ biblatex:
             type: incollection
             title: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
             date: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
-            publisher: https://vocabs.acdh.oeaw.ac.at/schema#hasHosting
+            publisher:
+                type: literal
+                properties:
+                - https://vocabs.acdh.oeaw.ac.at/schema#hasHosting
             eprint:
                 type: eprint
                 properties:
