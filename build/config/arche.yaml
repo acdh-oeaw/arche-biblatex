@@ -16,7 +16,7 @@ dissCacheService:
   - https://arche-dev.acdh-dev.oeaw.ac.at.at/api/
   - https://hdl.handle.net/
   metadataMode: parents
-  parentProperty: ""
+  parentProperty: https://vocabs.acdh.oeaw.ac.at/schema#isPartOf
   resourceProperties: []
   relativesProperties: []
 biblatex:
