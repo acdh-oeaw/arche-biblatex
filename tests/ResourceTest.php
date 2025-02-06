@@ -73,7 +73,8 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   bookauthor = {Steiner, Guenther and {} and {} and {} and {}},
   note = {sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602},
   keywords = {Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit},
-  abstract = {Das Protokoll behandelt die 3. Länderkonferenz.}
+  abstract = {Das Protokoll behandelt die 3. Länderkonferenz.},
+  doi = {10.1515/IPRG.2009.011}
 }
 ";
         $this->assertEquals($expected, $output);
@@ -112,7 +113,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals($expected, $response2);
         $this->assertGreaterThan($t2, $t1 / 10);
     }
-
+    
     private function getRepoResourceStub(string $metaPath): RepoResourceInterface {
         $graph = new DatasetNode(DF::namedNode(self::RES_URL));
         $graph->add(RdfIoUtil::parse($metaPath, new DF(), 'text/turtle'));

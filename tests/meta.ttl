@@ -283,6 +283,7 @@ ns1:139852 ns2:hasBinaryUpdatedRole "pandorfer";
     ns2:hasFormat "application/xml";
     ns2:hasSchema "https://tei-c.org/Vault/P5/4.2.2/xml/tei/custom/schema/relaxng/tei_all.rng";
     ns2:hasIdentifier <https://hdl.handle.net/21.11115/0000-000E-5942-4>;
+    ns2:hasIdentifier <https://doi.org/10.1515/IPRG.2009.011>;
     ns2:hasUpdatedRole "pandorfer";
     ns2:hasLicense ns1:48534;
     ns2:hasActor ns1:138103;

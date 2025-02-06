@@ -62,7 +62,7 @@ class Resource {
     const TYPE_PERSON        = 'person';
     const TYPE_CURRENT_DATE  = 'currentDate';
     const TYPE_LITERAL       = 'literal';
-    const TYPE_EPRINT        = 'eprint';
+    const TYPE_NOT_LINKED_ID = 'notLinkedId';
     const TYPE_URL           = 'url';
     const SRC_PARENT         = 'parent';
     const SRC_TOP_COLLECTION = 'topCollection';
@@ -101,8 +101,8 @@ class Resource {
     public function getBiblatex(string $lang, ?string $override = null,
                                 ?string $property = null): string {
         $this->lang = $lang;
-        
-        $classes    = $this->meta->listObjects(new QT($this->node, RDF::RDF_TYPE))->getValues();
+
+        $classes = $this->meta->listObjects(new QT($this->node, RDF::RDF_TYPE))->getValues();
         foreach ($classes as $c) {
             if (isset($this->config->mapping->$c)) {
                 $this->mapping = $this->config->mapping->$c;
@@ -235,8 +235,9 @@ class Resource {
                 return $this->formatAll($definition->properties);
             case self::TYPE_PERSON:
                 return $this->formatPersons($definition->properties);
-            case self::TYPE_EPRINT:
-                return preg_replace('|^https?://[^/]*/|', '', (string) $this->getLiteral(new PT($definition->properties[0])));
+            case self::TYPE_NOT_LINKED_ID:
+                $value = $this->formatAll($definition->properties, null, true, $definition->reqNmsp ?? $definition->prefNmsp ?? null, isset($definition->reqNmsp));
+                return preg_replace('|https?://[^/]*/|', '', $value);
             case self::TYPE_URL:
                 return $this->formatAll($definition->properties, null, true, $definition->reqNmsp ?? $definition->prefNmsp ?? null, isset($definition->reqNmsp));
             default:
