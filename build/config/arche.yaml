@@ -240,23 +240,21 @@ biblatex:
                 - https://vocabs.acdh.oeaw.ac.at/schema#hasAuthor
                 - https://vocabs.acdh.oeaw.ac.at/schema#hasContributor
             journaltitle: https://vocabs.acdh.oeaw.ac.at/schema#hasSeriesInformation  
+            series: https://vocabs.acdh.oeaw.ac.at/schema#hasSeriesInformation  
             pages: https://vocabs.acdh.oeaw.ac.at/schema#hasPages
             isbn: https://vocabs.acdh.oeaw.ac.at/schema#hasNonLinkedIdentifier 
             url:
                 type: url
                 properties:
                 - https://vocabs.acdh.oeaw.ac.at/schema#hasUrl
-            publisher: 
-              type: person
-              properties:
-              - https://vocabs.acdh.oeaw.ac.at/schema#hasPublisher
+            publisher: https://vocabs.acdh.oeaw.ac.at/schema#hasPublisher
             pagetotal: https://vocabs.acdh.oeaw.ac.at/schema#hasExtent
             abstract: https://vocabs.acdh.oeaw.ac.at/schema#hasDescription
             language: https://vocabs.acdh.oeaw.ac.at/schema#hasLanguage
             address: https://vocabs.acdh.oeaw.ac.at/schema#hasCity
             venue: https://vocabs.acdh.oeaw.ac.at/schema#hasAddress
             doi:
-                type: url
+                type: notLinkedId
                 properties:
                 - https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier
                 reqNmsp: https://doi.org
