@@ -18,7 +18,7 @@
         "guzzlehttp/guzzle": "^7",
         "acdh-oeaw/arche-lib": "^7",
         "renanbr/bibtex-parser": "^2.1",
-        "acdh-oeaw/arche-diss-cache": "^0.10.0"
+        "acdh-oeaw/arche-diss-cache": "^0.11"
     },
     "autoload": {
         "psr-4": {
