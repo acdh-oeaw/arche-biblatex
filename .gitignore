@@ -6,3 +6,4 @@
 /build/docroot
 /build/logs
 /.phpunit.cache
+csl-schema.json

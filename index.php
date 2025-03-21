@@ -26,19 +26,35 @@
 
 use acdhOeaw\arche\lib\dissCache\Service;
 use acdhOeaw\arche\biblatex\Resource;
+use zozlak\HttpAccept;
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
 
 require_once 'vendor/autoload.php';
 
-$service  = new Service(__DIR__ . '/config.yaml');
-$config   = $service->getConfig();
-$clbck    = fn($res, $param) => Resource::cacheHandler($res, $param, $config->biblatex, $service->getLog());
+$service = new Service(__DIR__ . '/config.yaml');
+$config  = $service->getConfig();
+$clbck   = fn($res, $param) => Resource::cacheHandler($res, $param, $config->biblatex, $service->getLog());
 $service->setCallback($clbck);
+
+// response format negotation
+$format = Resource::MIME_BIBLATEX;
+try {
+    if (isset($_GET['format'])) {
+        $_SERVER['HTTP_ACCEPT'] = $_GET['format'];
+    }
+    $formats = [Resource::MIME_BIBLATEX, Resource::MIME_CSL_JSON, Resource::MIME_JSON];
+    $format  = HttpAccept::getBestMatch($formats);
+    $format  = $format->getFullType();
+} catch (RuntimeException) {
+    
+}
+
 $param    = [
     $_GET['lang'] ?? $config->biblatex->defaultLang,
     $_GET['override'] ?? null,
+    $format,
 ];
 $response = $service->serveRequest($_GET['id'] ?? '', $param);
 $response->send();
