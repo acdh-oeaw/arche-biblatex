@@ -35,8 +35,8 @@ jobs:
           curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
           curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
           # acdh:Collection
-          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
-          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-0016-7FCD-4'
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-0016-7FCD-4'
           # acdh:TopCollection
           curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-558C-5'
           curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-558C-5'

@@ -89,7 +89,7 @@ class Resource {
         };
         unset($param[2]);
         $output = match ($format) {
-            self::MIME_CSL_JSON => json_encode($bibRes->getCsl(...$param), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+            self::MIME_CSL_JSON => json_encode($bibRes->getCsl(...$param), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             default => $bibRes->getBiblatex(...$param),
         };
         return new ResponseCacheItem($output, 200, ['Content-Type' => $format]);
@@ -176,8 +176,8 @@ class Resource {
             } elseif (is_array($value)) {
                 // persons
                 $value = implode(' and ', array_map($personFmt, $value));
-            }
-            $output .= ",\n  $key = {" . $value . "}";
+	    }
+            $output .= ",\n  $key = {" . str_replace(["{", "}"], [' ', '', "\\{", "\\}"], $value) . "}";
         }
         $output .= "\n}\n";
         return $output;
@@ -299,7 +299,10 @@ class Resource {
 
         if ($cslPropType === self::TYPE_DATE) {
             $value = ['raw' => substr($value, 0, 10)];
-        }
+	}
+	if ($cslPropType === self::TYPE_LITERAL) {
+            $value = str_replace(["\n", "\r"], [' ', ''], $value);
+	}
         // corner cases
         if ($key === 'language') {
             $value = mb_strtoupper(substr($value, 0, 2));
@@ -373,7 +376,7 @@ class Resource {
                         if (!isset($literals[$lang])) {
                             $literals[$lang] = [];
                         }
-                        $values[$lang][] = strpos($value, ',') !== false ? '{' . $value . '}' : $value;
+                        $values[$lang][] = $value;
                     }
                 } else {
                     if ($onlyUrl) {
@@ -382,7 +385,7 @@ class Resource {
                         $value = $this->getLiteral(new QT($i, $this->schema->label));
                     }
                     if (!empty($value)) {
-                        $resources[] = strpos($value, ',') !== false ? '{' . $value . '}' : $value;
+                        $resources[] = $value;
                     }
                 }
             }

@@ -30,6 +30,7 @@ biblatex:
       type:
         entry: incollection
         chapter: inbook
+        dataset: dataset
         document: misc
         webpage: online
       property:
@@ -40,6 +41,7 @@ biblatex:
         DOI: doi
         ISBN: isbn
         keyword: keywords
+        page: pages
         publisher-place: address
         URL: url
     biblatexToCsl:
@@ -54,6 +56,7 @@ biblatex:
         booktitle: container-title
         doi: DOI
         isbn: ISBN
+        pages: page
         year: available-date
     mapping:
         person:
@@ -92,9 +95,9 @@ biblatex:
             editor: https://vocabs.acdh.oeaw.ac.at/schema#hasEditor
             author: 
               properties:
+              # 2022-07-12 acdh:hasPrincipalInvestigator removed on Seta's request
               - https://vocabs.acdh.oeaw.ac.at/schema#hasAuthor
               - https://vocabs.acdh.oeaw.ac.at/schema#hasCreator
-              - https://vocabs.acdh.oeaw.ac.at/schema#hasPrincipalInvestigator
             compiler: https://vocabs.acdh.oeaw.ac.at/schema#hasDigitisingAgent
             version: https://vocabs.acdh.oeaw.ac.at/schema#hasVersion
             language:
@@ -305,8 +308,8 @@ biblatex:
               # 2022-07-12 acdh:hasPrincipalInvestigator removed on Seta's request
               - https://vocabs.acdh.oeaw.ac.at/schema#hasAuthor
               - https://vocabs.acdh.oeaw.ac.at/schema#hasContributor
-            container-title: https://vocabs.acdh.oeaw.ac.at/schema#hasSeriesInformation  
-            number-of-pages: https://vocabs.acdh.oeaw.ac.at/schema#hasPages
+            issue: https://vocabs.acdh.oeaw.ac.at/schema#hasSeriesInformation  
+            page: https://vocabs.acdh.oeaw.ac.at/schema#hasPages
             ISBN: https://vocabs.acdh.oeaw.ac.at/schema#hasNonLinkedIdentifier 
             URL: 
               type: url
