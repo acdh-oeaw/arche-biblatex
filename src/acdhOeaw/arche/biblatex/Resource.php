@@ -49,10 +49,11 @@ use zozlak\RdfConstants as RDF;
 /**
  * Maps ARCHE resource metadata to a BibLaTeX bibliographic entry.
  * 
- * Fro BibTeX/BibLaTeX bibliographic entry reference see:
+ * Fro BibTeX/BibLaTeX/CSL bibliographic entry reference see:
  * - https://www.bibtex.com/g/bibtex-format/#fields
  * - chapter 8 of http://tug.ctan.org/info/bibtex/tamethebeast/ttb_en.pdf
  * - https://mirror.kumi.systems/ctan/macros/latex/contrib/biblatex/doc/biblatex.pdf
+ * - https://docs.citationstyles.org/en/stable/specification.html#appendix-iv-variables
  * 
  * @author zozlak
  */
@@ -140,7 +141,7 @@ class Resource {
             }
         }
 
-        // overrides from $.cfg.biblatexProperty in metadata
+        // overrides from $.cfg.overrideProperty in metadata
         $this->applyOverrides($output);
         // overrides from $override parameter (e.g. from HTTP request parameter)
         if (!empty($override)) {
@@ -188,7 +189,7 @@ class Resource {
      */
     private function applyOverrides(array &$fields, ?string $override = null): void {
         $src      = $override === null ? 'metadata' : 'parameter';
-        $override = trim((string) ($override ?? (string) $this->meta->getObject(new QT($this->node, $this->config->biblatexProperty))));
+        $override = trim((string) ($override ?? (string) $this->meta->getObject(new QT($this->node, $this->config->overrideProperty))));
         if (empty($override)) {
             return;
         }
