@@ -3,7 +3,7 @@
 [![Build status](https://github.com/acdh-oeaw/arche-biblatex/actions/workflows/deploy.yaml/badge.svg)](https://github.com/acdh-oeaw/arche-biblatex/actions/workflows/deploy.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/acdh-oeaw/arche-biblatex/badge.svg?branch=master)](https://coveralls.io/github/acdh-oeaw/arche-biblatex?branch=master)
 
-An ARCHE dissemination service providing mapping of resource's metadata to BibLaTeX bibliographic entries.
+An ARCHE dissemination service providing mapping of resource's metadata to the [BibLaTeX](https://linorg.usp.br/CTAN/macros/latex/contrib/biblatex/doc/biblatex.pdf) and [CSL-JSON](https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html) bibliographic entries.
 
 # Installation
 
@@ -17,23 +17,27 @@ An ARCHE dissemination service providing mapping of resource's metadata to BibLa
 
 # Usage
 
-`http://deploymentUrl/?id=url-encoded-arche-resource-identifier&lang=preferredLanguageCode`
+`http://deploymentUrl/?id=url-encoded-arche-resource-identifier`
 
-Optionally an `override` query parameter can be also supplied providing URL-encoded BibLaTeX bibliographic entry or its fragment.
-It works in the same way as an override coming from ARCHE resource metadata (details below), just is applied after it.
+Optional query parameters:
+
+* `lang=two-letters-language-code` - preferred labels language, e.g. `lang=en`
+* `override=biblatex-bibliographic-entry-or-csl-json-entry` - allows to manually override and/or add output fields. The format is autodetected and is independent of the output format (e.g. you can provided a CSL-JSON override while requesting the entry in the BibLaTeX format).
+* `format=desired-reponse-format` - `application/x-bibtex` - default, `application/vnd.citationstyles.csl+json` or `application/json`
 
 # Override rules
 
-* The base BibLaTeX bibliographic entry is created according to the mapping provided in the `config.yaml`.
+* The base entry is created in the CSL according to the mapping provided in the `config.yaml`.
   The mapping is chosen based on the ARCHE resource RDF class.
-* Then overrides comming from the ARCHE resource metadata property specified by the `config.yaml->biblatex->biblatexProperty` configuration option are applied.
+* Then overrides comming from the ARCHE resource metadata property specified by the `config.yaml->biblatex->overrideProperty` configuration option are applied.
+  If the override is provided in the BibLaTeX format, it is first converted to the CSL according to the `config.yaml->biblatex->biblatexToCsl` mapping rules.
 * Finally overrides comming from the `override` request parameter are applied.
-
+  If the override is provided in the BibLaTeX format, it is first converted to the CSL according to the `config.yaml->biblatex->biblatexToCsl` mapping rules.
 
 ## Details
 
-* All bibliographic entry information including entry type and citation key are overrided.
-  If you want to preserve the entry type and/or citation key:
+* All bibliographic entry information including entry type and citation key are overriden.
+  If you want to provide override values in the BibLaTeX format but preserve the entry type and/or citation key use the following syntax:
     * either use the "magic" `NOOVERRIDE` type/citation key value, e.g.
       ```
       @NOOVERRIDE{NOOVERRIDE,
