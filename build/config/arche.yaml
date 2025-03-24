@@ -329,9 +329,11 @@ biblatex:
               - https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier
               reqNmsp: https://doi.org/
         https://vocabs.acdh.oeaw.ac.at/schema#Project:
-            type: webpage
+            type: 
+              type: const
+              value: webpage
             title: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
-            date: https://vocabs.acdh.oeaw.ac.at/schema#hasStartDate
+            issued: https://vocabs.acdh.oeaw.ac.at/schema#hasStartDate
             author: 
               properties:
               # 2022-07-12 acdh:hasPrincipalInvestigator removed on Seta's request
@@ -345,6 +347,6 @@ biblatex:
               - https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier
             accessed:
               type: currentDate
-            addendum:
+            note:
                 type: const
-                value: {Information describes a project connected to collections in ARCHE.}
+                value: Information describes a project connected to collections in ARCHE.

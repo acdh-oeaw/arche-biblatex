@@ -31,8 +31,21 @@ jobs:
           vendor/bin/yaml-edit.php --src build/config/arche.yaml --src '{"dissCacheService": {"repoDb": []}}' config.yaml
           docker run -d --name "$RANCHER_NAMESPACE" -v `pwd`/config.yaml:/var/www/html/config.yaml -p 8080:80 "acdhch/$RANCHER_NAMESPACE:latest"
           sleep 1
+          # acdh:Resource
           curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
           curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
+          # acdh:Collection
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-5942-4'
+          # acdh:TopCollection
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-558C-5'
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-558C-5'
+          # acdh:Publication
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fpub-hagmann-2024'
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fpub-hagmann-2024'
+          # acdh:Project
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fproject-puzzle4d'
+          curl -f -i 'http://127.0.0.1:8080/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fproject-puzzle4d'
       - uses: acdh-oeaw/arche_cicd_finish_action@main
         with:
           pushAndRedeploy: ${{ github.event_name == 'release' && github.event.action == 'published' || inputs.deploy }}
