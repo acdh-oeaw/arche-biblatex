@@ -170,7 +170,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
             'keyword'          => 'Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit',
             'abstract'         => 'Das Protokoll behandelt die 3. Länderkonferenz.',
         ];
-        $body          = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $body          = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_CSL_JSON], false);
         $this->assertEquals($expected, $response1);
         $expected->hit = true;
@@ -227,7 +227,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
             ],
             'DOI'              => 'https://doi.org/10.1201/9780203881613',
         ];
-        $body          = json_encode($output, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $body          = json_encode($output, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_CSL_JSON], false);
         $this->assertEquals($expected, $response1);
         $expected->hit = true;
