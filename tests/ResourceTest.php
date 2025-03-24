@@ -77,7 +77,6 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
 ";
 //  eprint = {21.11115/0000-000E-5942-4},
 //  eprinttype = {hdl},
-//  editoratype = {compiler},
         $this->assertEquals($expected, $output);
     }
 
@@ -130,7 +129,6 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   abstract = {Das Protokoll behandelt die 3. Länderkonferenz.}
 }
 ";
-//  editoratype = {compiler},
 //  eprint = {21.11115/0000-000E-5942-4},
 //  eprinttype = {hdl},
         $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_BIBLATEX], false);
@@ -274,7 +272,6 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   doi = {https://doi.org/10.1201/9780203881613}
 }
 ";
-//  editoratype = {compiler},
 //  eprint = {21.11115/0000-000E-5942-4},
 //  eprinttype = {hdl},
         $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_BIBLATEX], false);
@@ -283,7 +280,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $this->assertEquals($expected, $response2);
         $this->assertGreaterThan($t2, $t1 / 10);
     }
-    
+
     private function getRepoResourceStub(string $metaPath): RepoResourceInterface {
         $graph = new DatasetNode(DF::namedNode(self::RES_URL));
         $graph->add(RdfIoUtil::parse($metaPath, new DF(), 'text/turtle'));
