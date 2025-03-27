@@ -46,6 +46,7 @@ biblatex:
         URL: url
     biblatexToCsl:
       type:
+        dataset: dataset
         inbook: chapter
         incollection: entry
         misc: document
