@@ -57,7 +57,10 @@ biblatex:
         booktitle: container-title
         doi: DOI
         isbn: ISBN
+        journaltitle: container-title
+        location: publisher-place
         pages: page
+        url: URL
         year: available-date
     mapping:
         person:
