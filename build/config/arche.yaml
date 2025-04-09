@@ -87,6 +87,7 @@ biblatex:
             accessed:
               type: currentDate
             available-date: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
+            issued: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
             publisher:
               type: literal
               properties:
@@ -135,6 +136,7 @@ biblatex:
             accessed:
               type: currentDate
             available-date: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
+            issued: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
             publisher:
               type: literal
               properties:
@@ -189,6 +191,7 @@ biblatex:
             accessed:
               type: currentDate
             available-date: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
+            issued: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
             publisher:
               type: literal
               properties:
@@ -249,6 +252,7 @@ biblatex:
             accessed:
               type: currentDate
             available-date: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
+            issued: https://vocabs.acdh.oeaw.ac.at/schema#hasAvailableDate
             publisher:
               type: literal
               properties:
