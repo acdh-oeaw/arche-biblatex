@@ -306,6 +306,7 @@ biblatex:
               value: document
             title: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
             available-date: https://vocabs.acdh.oeaw.ac.at/schema#hasIssuedDate
+            issued: https://vocabs.acdh.oeaw.ac.at/schema#hasIssuedDate
             editor: https://vocabs.acdh.oeaw.ac.at/schema#hasEditor
             author: 
               properties:
