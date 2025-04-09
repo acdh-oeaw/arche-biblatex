@@ -36,6 +36,7 @@ biblatex:
       property:
         accessed: urldate
         available-date: date
+        issued: date
         container-title: booktitle
         container-author: bookauthor
         DOI: doi
