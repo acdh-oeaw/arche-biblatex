@@ -58,7 +58,9 @@ try {
         $format = $format->getFullType();
     }
 } catch (RuntimeException) {
-    
+    if ($e->getMessage() === 'No matching format') {
+        $format = Resource::MIME_CSL_JSON;
+    }
 }
 
 $param    = [
