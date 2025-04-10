@@ -59,12 +59,12 @@ Optional query parameters:
 Compare the output for the sample resource (https://hdl.handle.net/21.11115/0000-000E-753C-C).  
 (please note the same data which are provided in the `override` request parameter below can be also provided in the "custom citation" resource metadata property)
 
-* Default: https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C`
+* Default: https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C
 * With entry type set to `book` but citation key preserved, `author` field overrided with a new value as well as `booktitle` and `bookauthor` fields removed:
-  https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C&override=%40book%7BNOOVERRIDE%2C%0A%20%20author%20%3D%20%7BDoe%2C%20John%7D%0A%2C%20%20booktitle%20%3D%20%7B%7D%2C%20bookauthor%20%3D%20%7B%7D%2C%0A%7D  
+  https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C&override=%40dataset%7BNOOVERRIDE%2C%0A%20%20author%20%3D%20%7BDoe%2C%20John%7D%0A%2C%20%20booktitle%20%3D%20%7B%7D%2C%20bookauthor%20%3D%20%7B%7D%2C%0A%7D  
   The non-URL-encoded `override` parameter value () used here is:
   ```
-  @book{NOOVERRIDE,
+  @dataset{NOOVERRIDE,
     author = {Doe, John},
     booktitle = {},
     bookauthor = {},
@@ -92,23 +92,7 @@ For a live development you can just build it with an empty `build/docroot` direc
 
 Examples:
 
-* Creating a production image
-  ```bash
-  # install dependencies skipping development ones and optimizing autoloader
-  composer update --no-dev -o
-  # prepare the docroot using build/config/arche.yaml as the config.yaml
-  mkdir build/docroot && cp -R index.php src vendor build/docroot/ && cp build/config/arche.yaml build/docroot/config.yaml
-  # build the image
-  docker build --rm -t acdhch/arche-biblatex --build-arg VARIANT=production build
-  # try to run it locally
-  docker run -d --name arche-biblatex -p 80:80 acdhch/arche-biblatex
-  # check if it works locally
-  curl -i 'http://127.0.0.1/?id=https%3A%2F%2Fid.acdh.oeaw.ac.at%2Fgtrans'
-  # push the image to the registry
-  docker push acdhch/arche-biblatex
-  # redeploy on ACDH Kubernetes
-  curl -X POST 'https://rancher.acdh-dev.oeaw.ac.at/v3/project/{pathToDesiredWorkload}?action=redeploy' -H 'Authorization: Bearer {myRancherApiToken}'
-  ```
+* Creating a production image - see the https://github.com/acdh-oeaw/arche-biblatex/blob/master/.github/workflows/deploy.yaml
 * Creating a development image and running it locally
   ```bash
   # install dependencies
