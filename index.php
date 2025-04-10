@@ -41,19 +41,22 @@ $service->setCallback($clbck);
 // response format negotation
 $format = Resource::MIME_BIBLATEX;
 try {
-    if (isset($_GET['format'])) {
-        $_SERVER['HTTP_ACCEPT'] = $_GET['format'];
-    }
-    $templates = glob(__DIR__ . '/vendor/citation-style-language/styles/*glob');
+    $templates = glob(__DIR__ . '/vendor/citation-style-language/styles/*csl');
     if (!empty($config->biblatex->cslTemplatesDir)) {
         $templates = array_merge($templates, glob($config->biblatex->cslTemplatesDir . '/*csl'));
     }
     $formats = array_merge(
         [Resource::MIME_BIBLATEX, Resource::MIME_CSL_JSON, Resource::MIME_JSON],
-        array_map(fn($x) => substr($x, 0, -4), $templates)
+        array_map(fn($x) => substr(basename($x), 0, -4), $templates)
     );
-    $format  = HttpAccept::getBestMatch($formats);
-    $format  = $format->getFullType();
+    if (isset($_GET['format'])) {
+        $_SERVER['HTTP_ACCEPT'] = $_GET['format'];
+    }
+    $format = $_SERVER['HTTP_ACCEPT'] ?? '';
+    if (!in_array($format, $formats)) {
+        $format = HttpAccept::getBestMatch($formats);
+        $format = $format->getFullType();
+    }
 } catch (RuntimeException) {
     
 }
