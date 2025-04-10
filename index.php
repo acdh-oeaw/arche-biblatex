@@ -57,7 +57,7 @@ try {
         $format = HttpAccept::getBestMatch($formats);
         $format = $format->getFullType();
     }
-} catch (RuntimeException) {
+} catch (RuntimeException $e) {
     if ($e->getMessage() === 'No matching format') {
         $format = Resource::MIME_CSL_JSON;
     }
