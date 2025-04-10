@@ -195,7 +195,12 @@ class Resource {
             return $ret;
         };
 
-        $output = "@" . $this->csl2Biblatex('type', $csl['type']) . "{" . $csl['id'];
+        $type = $this->csl2Biblatex('type', $csl['type']);
+        if (empty($type)) {
+            throw new BiblatexException("Missing CSL to BibLaTeX mapping for type $value", 500);
+        }
+
+        $output = "@$type{" . $csl['id'];
         foreach ($csl as $key => $value) {
             if (in_array($key, ['id', 'type'])) {
                 continue;
@@ -279,6 +284,9 @@ class Resource {
                     $this->log?->debug("Overwriting field '$key' with '$value'");
                 } elseif ($key === '_type' && $value !== self::NO_OVERRIDE) {
                     $fields['type'] = $this->biblatex2Csl('type', $value);
+                    if (empty($fields['type'])) {
+                        throw new BiblatexException("Missing BibLaTeX to CSL mapping for type $value", 500);
+                    }
                     $this->log?->debug("Overwriting entry type with '$value'");
                 } elseif ($key === 'citation-key' && $value !== self::NO_OVERRIDE) {
                     $fields['id'] = $value;
@@ -558,7 +566,7 @@ class Resource {
     private function biblatexPersons2CslPersons(string $src): array {
         $ret = explode(' and ', $src);
         $ret = array_map(fn($x) => explode(', ', $x), $ret);
-        $ret = array_map(fn($x) => count($x) === 1 ? ['literal' => trim(x[0])] : [
+        $ret = array_map(fn($x) => count($x) === 1 ? ['literal' => trim($x[0])] : [
             'family' => trim($x[0]), 'given'  => trim($x[1])], $ret);
         return $ret;
     }
