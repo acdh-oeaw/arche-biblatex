@@ -33,6 +33,8 @@ use RenanBr\BibTexParser\Parser as BiblatexP;
 use RenanBr\BibTexParser\Processor\TagNameCaseProcessor as BiblatexCP;
 use RenanBr\BibTexParser\Exception\ParserException as BiblatexE1;
 use RenanBr\BibTexParser\Exception\ProcessorException as BiblatexE2;
+use Seboettg\CiteProc\StyleSheet;
+use Seboettg\CiteProc\CiteProc;
 use rdfInterface\DatasetInterface;
 use rdfInterface\TermInterface;
 use rdfInterface\LiteralInterface;
@@ -73,6 +75,7 @@ class Resource {
     const MIME_BIBLATEX      = 'application/x-bibtex';
     const MIME_CSL_JSON      = 'application/vnd.citationstyles.csl+json';
     const MIME_JSON          = 'application/json';
+    const VALID_MIME         = [self::MIME_BIBLATEX, self::MIME_CSL_JSON, self::MIME_JSON];
 
     /**
      * @param array<mixed> $param
@@ -81,18 +84,29 @@ class Resource {
                                         array $param, object $config,
                                         ?LoggerInterface $log = null): ResponseCacheItem {
 
-        $bibRes = new self($res, $config, $log);
-        $format = match ($param[2] ?? '') {
-            self::MIME_JSON => self::MIME_CSL_JSON,
-            self::MIME_CSL_JSON => self::MIME_CSL_JSON,
-            default => self::MIME_BIBLATEX,
-        };
+        $format = $param[2] ?? self::MIME_BIBLATEX;
         unset($param[2]);
-        $output = match ($format) {
-            self::MIME_CSL_JSON => json_encode($bibRes->getCsl(...$param), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+
+        $bibRes = new self($res, $config, $log);
+
+        $dataFormat = match ($format) {
+            self::MIME_BIBLATEX => self::MIME_BIBLATEX,
+            default => self::MIME_CSL_JSON,
+        };
+        $data       = match ($dataFormat) {
+            self::MIME_CSL_JSON => $bibRes->getCsl(...$param),
             default => $bibRes->getBiblatex(...$param),
         };
-        return new ResponseCacheItem($output, 200, ['Content-Type' => $format]);
+
+        $output = match ($format) {
+            self::MIME_CSL_JSON => json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            self::MIME_JSON => json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            self::MIME_BIBLATEX => $data,
+            default => $bibRes->renderCslTemplate($data, $format),
+        };
+
+        $mime = in_array($format, self::VALID_MIME) ? $format : 'text/plain';
+        return new ResponseCacheItem($output, 200, ['Content-Type' => $mime]);
     }
 
     private RepoResourceInterface $res;
@@ -112,6 +126,23 @@ class Resource {
         $this->log    = $log;
         $this->node   = $this->res->getUri();
         $this->meta   = $this->res->getGraph()->getDataset();
+    }
+
+    /**
+     * 
+     * @param array<mixed> $data
+     * @param string $template either a name of the csl file in the 
+     *   https://github.com/citation-style-language/styles repository or 
+     *   a path to a CSL template file
+     */
+    public function renderCslTemplate(array $data, string $template): string {
+        $data   = json_decode(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        $tmpl   = StyleSheet::loadStyleSheet($template);
+        $cp     = new CiteProc($tmpl);
+        $output = $cp->render([$data]);
+        $output = preg_replace('`<[^>]+>\s*`', '', $output);
+        $output = html_entity_decode($output);
+        return $output;
     }
 
     public function getCsl(string $lang, ?string $override = null,
@@ -176,8 +207,9 @@ class Resource {
             } elseif (is_array($value)) {
                 // persons
                 $value = implode(' and ', array_map($personFmt, $value));
-	    }
-            $output .= ",\n  $key = {" . str_replace(["{", "}"], [' ', '', "\\{", "\\}"], $value) . "}";
+            }
+            $output .= ",\n  $key = {" . str_replace(["{", "}"], [' ', '', "\\{",
+                    "\\}"], $value) . "}";
         }
         $output .= "\n}\n";
         return $output;
@@ -299,10 +331,10 @@ class Resource {
 
         if ($cslPropType === self::TYPE_DATE) {
             $value = ['raw' => substr($value, 0, 10)];
-	}
-	if ($cslPropType === self::TYPE_LITERAL) {
+        }
+        if ($cslPropType === self::TYPE_LITERAL) {
             $value = str_replace(["\n", "\r"], [' ', ''], $value);
-	}
+        }
         // corner cases
         if ($key === 'language') {
             $value = mb_strtoupper(substr($value, 0, 2));

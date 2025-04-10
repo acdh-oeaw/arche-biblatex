@@ -18,6 +18,7 @@ dissCacheService:
   resourceProperties: []
   relativesProperties: []
 biblatex:
+    cslTemplatesDir: ''
     defaultLang: en
     overrideProperty: https://vocabs.acdh.oeaw.ac.at/schema#hasCustomCitation
     etal: etal

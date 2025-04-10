@@ -44,7 +44,14 @@ try {
     if (isset($_GET['format'])) {
         $_SERVER['HTTP_ACCEPT'] = $_GET['format'];
     }
-    $formats = [Resource::MIME_BIBLATEX, Resource::MIME_CSL_JSON, Resource::MIME_JSON];
+    $templates = glob(__DIR__ . '/vendor/citation-style-language/styles/*glob');
+    if (!empty($config->biblatex->cslTemplatesDir)) {
+        $templates = array_merge($templates, glob($config->biblatex->cslTemplatesDir . '/*csl'));
+    }
+    $formats = array_merge(
+        [Resource::MIME_BIBLATEX, Resource::MIME_CSL_JSON, Resource::MIME_JSON],
+        array_map(fn($x) => substr($x, 0, -4), $templates)
+    );
     $format  = HttpAccept::getBestMatch($formats);
     $format  = $format->getFullType();
 } catch (RuntimeException) {

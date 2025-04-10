@@ -228,7 +228,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
             'DOI'              => 'https://doi.org/10.1201/9780203881613',
         ];
         $body          = json_encode($output, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_CSL_JSON], false);
+        $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_JSON], false);
         $this->assertEquals($expected, $response1);
         $expected->hit = true;
         $this->assertEquals($expected, $response2);
@@ -275,6 +275,24 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
 //  eprint = {21.11115/0000-000E-5942-4},
 //  eprinttype = {hdl},
         $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_BIBLATEX], false);
+        $this->assertEquals($expected, $response1);
+        $expected->hit = true;
+        $this->assertEquals($expected, $response2);
+        $this->assertGreaterThan($t2, $t1 / 10);
+    }
+
+    public function testApa(): void {
+        $cache = $this->getCache();
+
+        $t0        = microtime(true);
+        $response1 = $cache->getResponse(['en', null, 'apa-6th-edition'], self::RES_URL);
+        $t1        = microtime(true);
+        $response2 = $cache->getResponse(['en', null, 'apa-6th-edition'], self::RES_URL);
+        $t2        = microtime(true) - $t1;
+        $t1        = $t1 - $t0;
+
+        $body          = 'Steiner, G. (n.d.). 3. Länderkonferenz. In P. Becker, T. Garstenauer, V. Helfert, K. Megner, & G. Steiner, Die Große Transformation. ARCHE. Retrieved from https://hdl.handle.net/21.11115/0000-000E-5942-4';
+        $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => 'text/plain'], false);
         $this->assertEquals($expected, $response1);
         $expected->hit = true;
         $this->assertEquals($expected, $response2);

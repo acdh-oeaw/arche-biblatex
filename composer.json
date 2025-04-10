@@ -19,7 +19,8 @@
         "acdh-oeaw/arche-lib": "^7",
         "renanbr/bibtex-parser": "^2.1",
         "acdh-oeaw/arche-diss-cache": "^0.11",
-        "zozlak/http-accept": "^0.1.0"
+        "zozlak/http-accept": "^0.1.0",
+        "seboettg/citeproc-php": "^2.6"
     },
     "autoload": {
         "psr-4": {
