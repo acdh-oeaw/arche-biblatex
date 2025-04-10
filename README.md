@@ -23,7 +23,11 @@ Optional query parameters:
 
 * `lang=two-letters-language-code` - preferred labels language, e.g. `lang=en`
 * `override=biblatex-bibliographic-entry-or-csl-json-entry` - allows to manually override and/or add output fields. The format is autodetected and is independent of the output format (e.g. you can provided a CSL-JSON override while requesting the entry in the BibLaTeX format).
-* `format=desired-reponse-format` - `application/x-bibtex` - default, `application/vnd.citationstyles.csl+json` or `application/json`
+* `format=desired-reponse-format`
+  * bibliographic data formats:
+    * `application/vnd.citationstyles.csl+json` (default) or `application/json` - returning a [CSL-JSON](https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html),
+    * `application/x-bibtex` - returning a [BibLaTeX bibliography entry](https://www.overleaf.com/learn/latex/Bibliography_management_with_biblatex#The_bibliography_file),
+  * citation formats - name of any file (without the `.csl extension`) in the [official CSL styles repository](https://github.com/citation-style-language/styles), e.g. `apa-6th-edition`
 
 # Override rules
 
