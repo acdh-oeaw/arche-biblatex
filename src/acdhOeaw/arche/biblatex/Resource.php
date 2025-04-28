@@ -45,6 +45,7 @@ use termTemplates\LiteralTemplate as LT;
 use acdhOeaw\arche\lib\Schema;
 use acdhOeaw\arche\lib\RepoResourceInterface;
 use acdhOeaw\arche\lib\dissCache\ResponseCacheItem;
+use acdhOeaw\arche\lib\dissCache\CachePdo;
 use zozlak\logging\Log;
 use zozlak\RdfConstants as RDF;
 
@@ -83,7 +84,6 @@ class Resource {
     static public function cacheHandler(RepoResourceInterface $res,
                                         array $param, object $config,
                                         ?LoggerInterface $log = null): ResponseCacheItem {
-
         $format = $param[2] ?? self::MIME_BIBLATEX;
         unset($param[2]);
 
@@ -117,6 +117,7 @@ class Resource {
     private TermInterface $node;
     private string $lang;
     private object $mapping;
+    private CachePdo $cache;
 
     public function __construct(RepoResourceInterface $res, object $config,
                                 ?LoggerInterface $log = null) {
@@ -126,6 +127,7 @@ class Resource {
         $this->log    = $log;
         $this->node   = $this->res->getUri();
         $this->meta   = $this->res->getGraph()->getDataset();
+        $this->cache  = new CachePdo($config->cacheDb);
     }
 
     /**
@@ -147,6 +149,15 @@ class Resource {
 
     public function getCsl(string $lang, ?string $override = null,
                            ?object $mapping = null): array {
+        $useCache = $this->res->getUri()->getValue() === $this->node->getValue();
+        if ($useCache) {
+            $cacheKey = (string) $this->node . "@$lang#$override";
+            $output   = $this->cache->get($cacheKey);
+            if (is_object($output)) {
+                return json_decode($output->value, true);
+            }
+        }
+
         $this->lang = $lang;
 
         if ($mapping !== null) {
@@ -179,6 +190,9 @@ class Resource {
             $this->applyOverrides($output, $override);
         }
 
+        if ($useCache) {
+            $id = $this->cache->set([$cacheKey], json_encode($output, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), null);
+        }
         return $output;
     }
 

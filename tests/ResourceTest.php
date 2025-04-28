@@ -29,9 +29,7 @@ namespace acdhOeaw\arche\biblatex\tests;
 use quickRdf\DatasetNode;
 use quickRdf\DataFactory as DF;
 use quickRdfIo\Util as RdfIoUtil;
-use acdhOeaw\arche\lib\Schema;
 use acdhOeaw\arche\lib\SearchConfig;
-use acdhOeaw\arche\lib\RepoInterface;
 use acdhOeaw\arche\lib\RepoResourceInterface;
 use acdhOeaw\arche\lib\dissCache\CachePdo;
 use acdhOeaw\arche\lib\dissCache\ResponseCache;
@@ -53,6 +51,18 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
 
     static public function setUpBeforeClass(): void {
         self::$cfg = json_decode(json_encode(yaml_parse_file(__DIR__ . '/config.yaml')));
+    }
+
+    public function setUp(): void {
+        parent::setUp();
+
+        foreach (glob('/tmp/cachePdo_*') as $i) {
+            unlink($i);
+        }
+        $dbFile = str_replace('sqlite:', '', self::$cfg->biblatex->cacheDb);
+        if (file_exists($dbFile)) {
+            unlink($dbFile);
+        }
     }
 
     public function testAllBiblatex(): void {
@@ -299,6 +309,18 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $this->assertGreaterThan($t2, $t1 / 10);
     }
 
+    public function testCslCache(): void {
+        $res      = $this->getRepoResourceStub(__DIR__ . '/meta.ttl');
+        $biblatex = new BibResource($res, self::$cfg->biblatex);
+        $t0       = microtime(true);
+        $out1     = $biblatex->getCsl('en');
+        $t1       = microtime(true);
+        $out2     = $biblatex->getCsl('en');
+        $t2       = microtime(true);
+        $this->assertEquals($out1, $out2);
+        $this->assertGreaterThan($t1, $t2 * 10);
+    }
+
     private function getRepoResourceStub(string $metaPath): RepoResourceInterface {
         $graph = new DatasetNode(DF::namedNode(self::RES_URL));
         $graph->add(RdfIoUtil::parse($metaPath, new DF(), 'text/turtle'));
@@ -311,9 +333,6 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
     }
 
     private function getCache(): ResponseCache {
-        foreach (glob('/tmp/cachePdo_*') as $i) {
-            unlink($i);
-        }
         $cfg                                  = self::$cfg->dissCacheService;
         $db                                   = new CachePdo('sqlite::memory:');
         $clbck                                = fn($res, $param) => BibResource::cacheHandler($res, $param, self::$cfg->biblatex);
