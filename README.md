@@ -41,7 +41,11 @@ Optional query parameters:
 
 ## Details
 
-* All bibliographic entry information including entry type and citation key are overriden.
+* All bibliographic entry information including entry type and citation key are overriden, e.g.
+  ```json
+  {"type": "my type", "date": {"raw": "2025-06-03"}, "container-title": "Title of my choice"}
+  ```
+  Overrides can be provided both in the CSL-JSON and BibLaTeX formats.  
   If you want to provide override values in the BibLaTeX format but preserve the entry type and/or citation key use the following syntax:
     * either use the "magic" `NOOVERRIDE` type/citation key value, e.g.
       ```
@@ -51,7 +55,8 @@ Optional query parameters:
       ```
     * or provide just BibLaTeX fields skipping the bibliographic entry header (and the final curly bracket), e.g.
       ```
-      fieldToOverride = {overriding value},
+      fieldToOverride1 = {overriding value},
+      fieldToOverride2 = {overriding value}
       ```
 * If you want a field to be skipped from the output, override it with an empty value.
 
