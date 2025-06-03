@@ -312,7 +312,10 @@ class Resource {
             }
             $entry = $entries[0];
 
-            $type = $this->csl2Biblatex('type', $fields['type'], '');
+            $type = self::MAPPING_DEFAULT;
+            if (isset($fields['type'])) {
+                $type = $this->csl2Biblatex('type', $fields['type'], '');
+            }
             if (($entry['_type'] ?? self::NO_OVERRIDE) !== self::NO_OVERRIDE) {
                 $type = $entry['_type'];
             }
