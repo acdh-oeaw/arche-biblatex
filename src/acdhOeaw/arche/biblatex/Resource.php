@@ -26,7 +26,6 @@
 
 namespace acdhOeaw\arche\biblatex;
 
-use RuntimeException;
 use Psr\Log\LoggerInterface;
 use RenanBr\BibTexParser\Listener as BiblatexL;
 use RenanBr\BibTexParser\Parser as BiblatexP;
@@ -176,7 +175,7 @@ class Resource {
             }
         }
         if (!isset($this->mapping)) {
-            throw new RuntimeException("Repository resource is of unsupported class", 400);
+            throw new BiblatexException("Repository resource is of unsupported class", 400);
         }
 
         $output = [];
@@ -187,9 +186,9 @@ class Resource {
             }
         }
 
-// overrides from $.cfg.overrideProperty in metadata
+        // overrides from $.cfg.overrideProperty in metadata
         $this->applyOverrides($output);
-// overrides from $override parameter (e.g. from HTTP request parameter)
+        // overrides from $override parameter (e.g. from HTTP request parameter)
         if (!empty($override)) {
             $this->applyOverrides($output, $override);
         }
@@ -308,7 +307,7 @@ class Resource {
             $parser->parseString($biblatex);
             $entries = $listener->export();
             if (count($entries) !== 1) {
-                throw new RuntimeException("Exactly one BibLaTeX entry expected but " . count($entries) . " parsed: $biblatex");
+                throw new BiblatexException("Exactly one BibLaTeX entry expected but " . count($entries) . " parsed: $biblatex");
             }
             foreach ($entries[0] as $key => $value) {
                 if (!in_array($key, self::BIBLATEX_SPECIAL)) {
@@ -342,10 +341,10 @@ class Resource {
             }
         } catch (BiblatexE1 $e) {
             $msg = $e->getMessage();
-            throw new RuntimeException("Can't parse ($msg): $biblatex");
+            throw new BiblatexException("Can't parse ($msg): $biblatex");
         } catch (BiblatexE2 $e) {
             $msg = $e->getMessage();
-            throw new RuntimeException("Can't parse ($msg): $biblatex");
+            throw new BiblatexException("Can't parse ($msg): $biblatex");
         }
     }
 
@@ -381,7 +380,7 @@ class Resource {
             self::TYPE_NOT_LINKED_ID => str_replace($nmsp, '', $this->formatAll($srcProps, null, true, $nmsp, $nmspReq)),
             self::TYPE_URL => $this->formatAll($srcProps, null, true, $nmsp, $nmspReq),
             self::TYPE_CURRENT_DATE => date('Y-m-d'),
-            default => throw new RuntimeException('Unsupported property type ' . $definition->type, 500),
+            default => throw new BiblatexException('Unsupported property type ' . $definition->type, 500),
         };
 
         if ($cslPropType === self::TYPE_DATE) {
@@ -580,7 +579,7 @@ class Resource {
         $cslSchema  = json_decode(file_get_contents($cslSchemaPath), true);
         $properties = $cslSchema['items']['properties'];
         if (!isset($properties[$property])) {
-            throw new RuntimeException("Property $property is not a part of the CSL-JSON schema");
+            throw new BiblatexException("Property $property is not a part of the CSL-JSON schema", 500);
         }
         $def  = $properties[$property];
         $type = $def['type'] ?? $def['$ref'];
@@ -593,7 +592,7 @@ class Resource {
             'string' => self::TYPE_LITERAL,
             '#/definitions/date-variable' => self::TYPE_DATE,
             '#/definitions/name-variable' => self::TYPE_PERSON,
-            default => throw new RuntimeException("Unknown property $property type: $type " . print_r($def, true)),
+            default => throw new BiblatexException("Unknown property $property type: $type " . print_r($def, true)),
         };
     }
 
