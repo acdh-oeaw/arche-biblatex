@@ -323,6 +323,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
     }
 
     public function testBiblatexYearMonth(): void {
+        $today    = date("Y-m-d");
         $res      = $this->getRepoResourceStub(__DIR__ . '/year_month.ttl');
         $biblatex = new BibResource($res, self::$cfg->biblatex);
 
@@ -331,7 +332,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $expected = [
             'id'             => 'foo',
             'type'           => 'chapter',
-            'accessed'       => ['raw' => '2025-06-03'],
+            'accessed'       => ['raw' => $today],
             'date'           => ['raw' => '2021-07'],
             'available-date' => ['raw' => '2018-08-07'],
         ];
@@ -339,7 +340,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
 
         // roundtrip
         $expected = "@inbook{foo,
-  urldate = {2025-06-03},
+  urldate = {" . $today . "},
   year = {2021},
   month = {07}
 }
@@ -351,8 +352,23 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $res      = $this->getRepoResourceStub(__DIR__ . '/year_month.ttl', 'https://arche.acdh.oeaw.ac.at/api/139853');
         $biblatex = new BibResource($res, self::$cfg->biblatex);
         $expected = "@inbook{foo,
-  urldate = {2025-06-03},
+  urldate = {" . $today . "},
   year = {2024}
+}
+";
+        $output   = $biblatex->getBiblatex('en');
+        $this->assertEquals($expected, $output);
+    }
+
+    public function testBiblatexTypeConditional(): void {
+        $today    = date("Y-m-d");
+        $res      = $this->getRepoResourceStub(__DIR__ . '/type_conditional.ttl');
+        $biblatex = new BibResource($res, self::$cfg->biblatex);
+
+        $expected = "@article{foo,
+  urldate = {" . $today . "},
+  date = {2018-08-07},
+  journaltitle = {Journal Title}
 }
 ";
         $output   = $biblatex->getBiblatex('en');

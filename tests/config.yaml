@@ -44,7 +44,9 @@ biblatex:
         available-date: date
         issued: date
         collection-title: series
-        container-title: booktitle
+        container-title:
+          article: journaltitle
+          default: booktitle
         container-author: bookauthor
         DOI: doi
         editor: editor

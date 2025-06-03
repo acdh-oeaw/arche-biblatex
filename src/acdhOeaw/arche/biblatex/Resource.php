@@ -76,6 +76,7 @@ class Resource {
     const MIME_CSL_JSON            = 'application/vnd.citationstyles.csl+json';
     const MIME_JSON                = 'application/json';
     const VALID_MIME               = [self::MIME_BIBLATEX, self::MIME_CSL_JSON, self::MIME_JSON];
+    const MAPPING_DEFAULT          = 'default';
     private const BIBLATEX_SPECIAL = [
         '_type', '_original', 'citation-key', 'type',
         'year', 'month'
@@ -212,7 +213,7 @@ class Resource {
             return $ret;
         };
 
-        $type = $this->csl2Biblatex('type', $csl['type']);
+        $type = $this->csl2Biblatex('type', $csl['type'], '');
         if (empty($type)) {
             throw new BiblatexException("Missing CSL to BibLaTeX mapping for type $value", 500);
         }
@@ -241,7 +242,7 @@ class Resource {
             }
 
             // mapping
-            $key = $this->csl2Biblatex('property', $key) ?? $key;
+            $key = $this->csl2Biblatex('property', $key, $type) ?? $key;
             if (is_array($value) && isset($value['raw'])) {
                 // date
                 $value = $value['raw'];
@@ -309,9 +310,16 @@ class Resource {
             if (count($entries) !== 1) {
                 throw new BiblatexException("Exactly one BibLaTeX entry expected but " . count($entries) . " parsed: $biblatex");
             }
-            foreach ($entries[0] as $key => $value) {
+            $entry = $entries[0];
+
+            $type = $this->csl2Biblatex('type', $fields['type'], '');
+            if (($entry['_type'] ?? self::NO_OVERRIDE) !== self::NO_OVERRIDE) {
+                $type = $entry['_type'];
+            }
+
+            foreach ($entry as $key => $value) {
                 if (!in_array($key, self::BIBLATEX_SPECIAL)) {
-                    $key          = $this->biblatex2Csl('property', $key) ?? $key;
+                    $key          = $this->biblatex2Csl('property', $key, $type) ?? $key;
                     $type         = $this->getCslPropertyType($key);
                     $fields[$key] = match ($type) {
                         self::TYPE_DATE => ['raw' => $value],
@@ -320,7 +328,7 @@ class Resource {
                     };
                     $this->log?->debug("Overwriting field '$key' with '$value'");
                 } elseif ($key === '_type' && $value !== self::NO_OVERRIDE) {
-                    $fields['type'] = $this->biblatex2Csl('type', $value);
+                    $fields['type'] = $this->biblatex2Csl('type', $value, '');
                     if (empty($fields['type'])) {
                         throw new BiblatexException("Missing BibLaTeX to CSL mapping for type $value", 500);
                     }
@@ -330,8 +338,8 @@ class Resource {
                     $this->log?->debug("Overwriting citation key with '$value'");
                 } elseif ($key === 'year') {
                     $fields['date'] = ['raw' => $value];
-                    if (isset($entries[0]['month'])) {
-                        $month = $entries[0]['month'];
+                    if (isset($entry['month'])) {
+                        $month = $entry['month'];
                         if (!is_numeric($month)) {
                             throw new BiblatexException('The month field value has to be numeric');
                         }
@@ -596,12 +604,26 @@ class Resource {
         };
     }
 
-    private function csl2Biblatex(string $dict, string $val): string | null {
-        return $this->config->cslToBiblatex->$dict?->$val ?? null;
+    private function csl2Biblatex(string $dict, string $val, string $type): string | null {
+        return $this->getMapping('cslToBiblatex', $dict, $val, $type);
     }
 
-    private function biblatex2Csl(string $dict, string $val): string | null {
-        return $this->config->biblatexToCsl->$dict?->$val ?? null;
+    private function biblatex2Csl(string $dict, string $val, string $type): string | null {
+        return $this->getMapping('biblatexToCsl', $dict, $val, $type);
+    }
+
+    private function getMapping(string $src, string $dict, string $val,
+                                string $type): string | null {
+        if (!is_object($this->config->$src->$dict ?? null)) {
+            return null;
+        }
+        $dict = $this->config->$src->$dict;
+        if (is_object($dict->$val ?? null)) {
+            $default = self::MAPPING_DEFAULT;
+            return $dict->$val->$type ?? $dict->$val->$default ?? null;
+        } else {
+            return $dict->$val ?? null;
+        }
     }
 
     /**

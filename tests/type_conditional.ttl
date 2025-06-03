@@ -1,0 +1,6 @@
+@prefix ns1: <https://arche.acdh.oeaw.ac.at/api/>.
+@prefix ns2: <https://vocabs.acdh.oeaw.ac.at/schema#>.
+
+ns1:139852 a ns2:Resource ;
+  ns2:hasAvailableDate "2018-08-07T10:02:06.534Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;
+  ns2:hasCustomCitation "@article{foo, journaltitle = {Journal Title}}" .
