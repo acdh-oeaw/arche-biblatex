@@ -62,21 +62,25 @@ use zozlak\RdfConstants as RDF;
  */
 class Resource {
 
-    // for fields definitions see https://docs.citationstyles.org/en/stable/specification.html#appendix-iv-variables
-    const CSL_SCHEMA_URL     = 'https://raw.githubusercontent.com/citation-style-language/schema/refs/heads/master/schemas/input/csl-data.json';
-    const NO_OVERRIDE        = 'NOOVERRIDE';
-    const TYPE_CONST         = 'const';
-    const TYPE_PERSON        = 'person';
-    const TYPE_CURRENT_DATE  = 'currentDate';
-    const TYPE_DATE          = 'date';
-    const TYPE_LITERAL       = 'literal';
-    const TYPE_NOT_LINKED_ID = 'notLinkedId';
-    const TYPE_URL           = 'url';
-    const TYPE_ID            = 'id';
-    const MIME_BIBLATEX      = 'application/x-bibtex';
-    const MIME_CSL_JSON      = 'application/vnd.citationstyles.csl+json';
-    const MIME_JSON          = 'application/json';
-    const VALID_MIME         = [self::MIME_BIBLATEX, self::MIME_CSL_JSON, self::MIME_JSON];
+// for fields definitions see https://docs.citationstyles.org/en/stable/specification.html#appendix-iv-variables
+    const CSL_SCHEMA_URL           = 'https://raw.githubusercontent.com/citation-style-language/schema/refs/heads/master/schemas/input/csl-data.json';
+    const NO_OVERRIDE              = 'NOOVERRIDE';
+    const TYPE_CONST               = 'const';
+    const TYPE_PERSON              = 'person';
+    const TYPE_CURRENT_DATE        = 'currentDate';
+    const TYPE_DATE                = 'date';
+    const TYPE_LITERAL             = 'literal';
+    const TYPE_NOT_LINKED_ID       = 'notLinkedId';
+    const TYPE_URL                 = 'url';
+    const TYPE_ID                  = 'id';
+    const MIME_BIBLATEX            = 'application/x-bibtex';
+    const MIME_CSL_JSON            = 'application/vnd.citationstyles.csl+json';
+    const MIME_JSON                = 'application/json';
+    const VALID_MIME               = [self::MIME_BIBLATEX, self::MIME_CSL_JSON, self::MIME_JSON];
+    private const BIBLATEX_SPECIAL = [
+        '_type', '_original', 'citation-key', 'type',
+        'year', 'month'
+    ];
 
     /**
      * @param array<mixed> $param
@@ -183,9 +187,9 @@ class Resource {
             }
         }
 
-        // overrides from $.cfg.overrideProperty in metadata
+// overrides from $.cfg.overrideProperty in metadata
         $this->applyOverrides($output);
-        // overrides from $override parameter (e.g. from HTTP request parameter)
+// overrides from $override parameter (e.g. from HTTP request parameter)
         if (!empty($override)) {
             $this->applyOverrides($output, $override);
         }
@@ -219,6 +223,25 @@ class Resource {
             if (in_array($key, ['id', 'type'])) {
                 continue;
             }
+
+            // corner cases
+            if ($key === 'available-date' && isset($csl['date'])) {
+                continue;
+            } elseif ($key == 'date' && strlen($value['raw'] ?? '1234-01-23') < 10 && !isset($value[2])) {
+                if (isset($value[0])) {
+                    $yaar  = $value[0];
+                    $month = $value[1] ?? '';
+                } else {
+                    list($year, $month) = explode('-', $value['raw'] . '-');
+                }
+                $output .= ",\n  year = {" . $year . "}";
+                if (!empty($month)) {
+                    $output .= ",\n  month = {" . $month . "}";
+                }
+                continue;
+            }
+
+            // mapping
             $key = $this->csl2Biblatex('property', $key) ?? $key;
             if (is_array($value) && isset($value['raw'])) {
                 // date
@@ -227,8 +250,9 @@ class Resource {
                 // persons
                 $value = implode(' and ', array_map($personFmt, $value));
             }
-            $output .= ",\n  $key = {" . str_replace(["{", "}"], [' ', '', "\\{",
-                    "\\}"], $value) . "}";
+
+            $value  = str_replace(["{", "}"], [' ', '', "\\{", "\\}"], $value);
+            $output .= ",\n  $key = {" . $value . "}";
         }
         $output .= "\n}\n";
         return $output;
@@ -273,7 +297,7 @@ class Resource {
     private function applyOverridesBiblatex(array &$fields,
                                             ?string $biblatex = null): void {
         if (substr($biblatex, 0, 1) !== '@') {
-            $biblatex = "@" . self::NO_OVERRIDE . "{" . self::NO_OVERRIDE . ",\n$biblatex\n}";
+            $biblatex = "@" . self::NO_OVERRIDE . "{" . self::NO_OVERRIDE . ", \n$biblatex\n}";
         }
 
         $listener = new BiblatexL();
@@ -287,7 +311,7 @@ class Resource {
                 throw new RuntimeException("Exactly one BibLaTeX entry expected but " . count($entries) . " parsed: $biblatex");
             }
             foreach ($entries[0] as $key => $value) {
-                if (!in_array($key, ['_type', '_original', 'citation-key', 'type'])) {
+                if (!in_array($key, self::BIBLATEX_SPECIAL)) {
                     $key          = $this->biblatex2Csl('property', $key) ?? $key;
                     $type         = $this->getCslPropertyType($key);
                     $fields[$key] = match ($type) {
@@ -305,6 +329,15 @@ class Resource {
                 } elseif ($key === 'citation-key' && $value !== self::NO_OVERRIDE) {
                     $fields['id'] = $value;
                     $this->log?->debug("Overwriting citation key with '$value'");
+                } elseif ($key === 'year') {
+                    $fields['date'] = ['raw' => $value];
+                    if (isset($entries[0]['month'])) {
+                        $month = $entries[0]['month'];
+                        if (!is_numeric($month)) {
+                            throw new BiblatexException('The month field value has to be numeric');
+                        }
+                        $fields['date']['raw'] .= sprintf('-%02d', $month);
+                    }
                 }
             }
         } catch (BiblatexE1 $e) {

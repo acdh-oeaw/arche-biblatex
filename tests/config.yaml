@@ -28,26 +28,81 @@ biblatex:
       parent: https://vocabs.acdh.oeaw.ac.at/schema#isPartOf
     cslToBiblatex:
       type:
+        article: article
+        book: book
         entry: incollection
         chapter: inbook
+        dataset: dataset
+        document: misc
+        online: webpage
+        paper-conference: inproceedings
+        thesis: thesis
+        webpage: online
       property:
         accessed: urldate
+        author: author
         available-date: date
+        issued: date
+        collection-title: series
         container-title: booktitle
         container-author: bookauthor
         DOI: doi
+        editor: editor
+        event-place: venue
+        ISBN: isbn
+        ISSN: issn
         keyword: keywords
-        publisher-place: address
+        language: language
+        note: note
+        number: number
+        page: pages
+        publisher: publisher
+        publisher-place: location
+        title: title
         URL: url
+        version: version
+        volume: volume
     biblatexToCsl:
       type:
+        article: article
+        book: book
+        dataset: dataset
         inbook: chapter
+        incollection: entry
+        inproceedings: paper-conference
+        manual: document
+        misc: document
+        online: webpage
+        thesis: thesis
+        unpublished: article
+        www: webpage
       property:
         address: publisher-place
+        author: author
         bookauthor: container-author
         booktitle: container-title
+        date: available-date
         doi: DOI
+        editor: editor
+        institution: publisher
+        isbn: ISBN
+        issn: ISSN
+        journaltitle: container-title
+        language: language
+        location: publisher-place
+        month: available-date
+        note: note
+        number: number
+        pages: page
+        publisher: publisher
+        school: publisher
+        series: collection-title
+        title: title
+        url: URL
+        version: version
         year: available-date
+        venue: event-place
+        volume: volume
     mapping:
         person:
             family: https://vocabs.acdh.oeaw.ac.at/schema#hasLastName

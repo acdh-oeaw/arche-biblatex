@@ -194,7 +194,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   title = {Mapping and analysis of linear landscape features},
   booktitle = {Geoinformation technologies for geo-cultural landscapes: European Perspectives},
   year = {2008},
-  address = {London},
+  location = {London},
   editor = {Vassilopoulos, Andreas and Evelpidou, Niki and Bender, Oliver and Krek, Alenka},
   doi = {https://doi.org/10.1201/9780203881613}
 }";
@@ -212,7 +212,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
             'type'             => 'chapter',
             'title'            => 'Mapping and analysis of linear landscape features',
             'accessed'         => ['raw' => date('Y-m-d')],
-            'available-date'   => ['raw' => '2008'],
+            'available-date'   => ['raw' => '2021-07-26'],
             'publisher'        => 'ARCHE',
             'URL'              => 'https://hdl.handle.net/21.11115/0000-000E-5942-4',
             'author'           => [['family' => 'Gugl', 'given' => 'Christian']],
@@ -228,6 +228,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
             'note'             => 'sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602',
             'keyword'          => 'Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit',
             'abstract'         => 'Das Protokoll behandelt die 3. Länderkonferenz.',
+            'date'             => ['raw' => '2008'],
             'publisher-place'  => 'London',
             'editor'           => [
                 ['family' => 'Vassilopoulos', 'given' => 'Andreas'],
@@ -251,7 +252,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   title = {Mapping and analysis of linear landscape features},
   booktitle = {Geoinformation technologies for geo-cultural landscapes: European Perspectives},
   year = {2008},
-  address = {London},
+  location = {London},
   editor = {Vassilopoulos, Andreas and Evelpidou, Niki and Bender, Oliver and Krek, Alenka},
   doi = {https://doi.org/10.1201/9780203881613}
 }";
@@ -267,7 +268,6 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $body          = "@inbook{gugl2008,
   title = {Mapping and analysis of linear landscape features},
   urldate = {" . date('Y-m-d') . "},
-  date = {2008},
   publisher = {ARCHE},
   url = {https://hdl.handle.net/21.11115/0000-000E-5942-4},
   author = {Gugl, Christian},
@@ -277,7 +277,8 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   note = {sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602},
   keywords = {Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit},
   abstract = {Das Protokoll behandelt die 3. Länderkonferenz.},
-  address = {London},
+  year = {2008},
+  location = {London},
   editor = {Vassilopoulos, Andreas and Evelpidou, Niki and Bender, Oliver and Krek, Alenka},
   doi = {https://doi.org/10.1201/9780203881613}
 }
@@ -321,8 +322,46 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $this->assertGreaterThan($t1, $t2 * 10);
     }
 
-    private function getRepoResourceStub(string $metaPath): RepoResourceInterface {
-        $graph = new DatasetNode(DF::namedNode(self::RES_URL));
+    public function testBiblatexYearMonth(): void {
+        $res      = $this->getRepoResourceStub(__DIR__ . '/year_month.ttl');
+        $biblatex = new BibResource($res, self::$cfg->biblatex);
+
+        // to CSL
+        $output   = $biblatex->getCsl('en');
+        $expected = [
+            'id'             => 'foo',
+            'type'           => 'chapter',
+            'accessed'       => ['raw' => '2025-06-03'],
+            'date'           => ['raw' => '2021-07'],
+            'available-date' => ['raw' => '2018-08-07'],
+        ];
+        $this->assertEquals($expected, $output);
+
+        // roundtrip
+        $expected = "@inbook{foo,
+  urldate = {2025-06-03},
+  year = {2021},
+  month = {07}
+}
+";
+        $output   = $biblatex->getBiblatex('en');
+        $this->assertEquals($expected, $output);
+
+        // only year
+        $res      = $this->getRepoResourceStub(__DIR__ . '/year_month.ttl', 'https://arche.acdh.oeaw.ac.at/api/139853');
+        $biblatex = new BibResource($res, self::$cfg->biblatex);
+        $expected = "@inbook{foo,
+  urldate = {2025-06-03},
+  year = {2024}
+}
+";
+        $output   = $biblatex->getBiblatex('en');
+        $this->assertEquals($expected, $output);
+    }
+
+    private function getRepoResourceStub(string $metaPath,
+                                         string $resUrl = self::RES_URL): RepoResourceInterface {
+        $graph = new DatasetNode(DF::namedNode($resUrl));
         $graph->add(RdfIoUtil::parse($metaPath, new DF(), 'text/turtle'));
 
         $res = $this->createStub(RepoResourceInterface::class);
