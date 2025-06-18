@@ -189,7 +189,9 @@ biblatex:
               properties: 
               - https://vocabs.acdh.oeaw.ac.at/schema#hasPid
               - https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier
-            editor: https://vocabs.acdh.oeaw.ac.at/schema#hasEditor
+            editor:
+              srcClass: https://vocabs.acdh.oeaw.ac.at/schema#TopCollection
+              property: editor
             author: 
               properties:
               # 2022-07-12 acdh:hasPrincipalInvestigator removed on Seta's request
@@ -244,7 +246,9 @@ biblatex:
               properties: 
               - https://vocabs.acdh.oeaw.ac.at/schema#hasPid
               - https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier
-            editor: https://vocabs.acdh.oeaw.ac.at/schema#hasEditor
+            editor:
+              srcClass: https://vocabs.acdh.oeaw.ac.at/schema#TopCollection
+              property: editor
             author: 
               properties:
               # 2022-07-12 acdh:hasPrincipalInvestigator removed on Seta's request
