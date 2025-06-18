@@ -133,7 +133,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   author = {Steiner, Guenther},
   language = {DE},
   booktitle = {Die Große Transformation},
-  bookauthor = {Becker, Peter and Garstenauer, Theresa and Helfert, Veronika and Megner, Karl and Steiner, Guenther},
+  bookauthor = {Becker, Peter},
   note = {sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602},
   keywords = {Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit},
   abstract = {Das Protokoll behandelt die 3. Länderkonferenz.}
@@ -171,10 +171,6 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
             'container-title'  => 'Die Große Transformation',
             'container-author' => [
                 ['family' => 'Becker', 'given' => 'Peter'],
-                ['family' => 'Garstenauer', 'given' => 'Theresa'],
-                ['family' => 'Helfert', 'given' => 'Veronika'],
-                ['family' => 'Megner', 'given' => 'Karl'],
-                ['family' => 'Steiner', 'given' => 'Guenther'],
             ],
             'note'             => 'sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602',
             'keyword'          => 'Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit',
@@ -220,10 +216,6 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
             'container-title'  => 'Geoinformation technologies for geo-cultural landscapes: European Perspectives',
             'container-author' => [
                 ['family' => 'Becker', 'given' => 'Peter'],
-                ['family' => 'Garstenauer', 'given' => 'Theresa'],
-                ['family' => 'Helfert', 'given' => 'Veronika'],
-                ['family' => 'Megner', 'given' => 'Karl'],
-                ['family' => 'Steiner', 'given' => 'Guenther'],
             ],
             'note'             => 'sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602',
             'keyword'          => 'Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit',
@@ -273,7 +265,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   author = {Gugl, Christian},
   language = {DE},
   booktitle = {Geoinformation technologies for geo-cultural landscapes: European Perspectives},
-  bookauthor = {Becker, Peter and Garstenauer, Theresa and Helfert, Veronika and Megner, Karl and Steiner, Guenther},
+  bookauthor = {Becker, Peter},
   note = {sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602},
   keywords = {Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit},
   abstract = {Das Protokoll behandelt die 3. Länderkonferenz.},
@@ -302,7 +294,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $t2        = microtime(true) - $t1;
         $t1        = $t1 - $t0;
 
-        $body          = 'Steiner, G. (n.d.). 3. Länderkonferenz. In P. Becker, T. Garstenauer, V. Helfert, K. Megner, & G. Steiner, Die Große Transformation. ARCHE. Retrieved from https://hdl.handle.net/21.11115/0000-000E-5942-4';
+        $body          = 'Steiner, G. (n.d.). 3. Länderkonferenz. In P. Becker, Die Große Transformation. ARCHE. Retrieved from https://hdl.handle.net/21.11115/0000-000E-5942-4';
         $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => 'text/plain'], false);
         $this->assertEquals($expected, $response1);
         $expected->hit = true;
