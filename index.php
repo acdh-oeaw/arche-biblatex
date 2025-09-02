@@ -53,6 +53,7 @@ try {
         $_SERVER['HTTP_ACCEPT'] = $_GET['format'];
     }
     $format = $_SERVER['HTTP_ACCEPT'] ?? '';
+    $format = str_replace('/*', '', $format); // resolver quirks
     if (!in_array($format, $formats)) {
         $format = HttpAccept::getBestMatch($formats);
         $format = $format->getFullType();
