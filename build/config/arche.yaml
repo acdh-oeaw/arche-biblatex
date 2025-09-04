@@ -141,11 +141,13 @@ biblatex:
               - https://vocabs.acdh.oeaw.ac.at/schema#hasPid
               - https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier
             editor: https://vocabs.acdh.oeaw.ac.at/schema#hasEditor
-            author: 
-              properties:
-              # 2022-07-12 acdh:hasPrincipalInvestigator removed on Seta's request
-              - https://vocabs.acdh.oeaw.ac.at/schema#hasAuthor
-              - https://vocabs.acdh.oeaw.ac.at/schema#hasCreator
+            # 2025-09-04 removed as it leads to double-citing authors and editors
+            # and we prefer to stick only to editors
+            #author: 
+            #  properties:
+            #  # 2022-07-12 acdh:hasPrincipalInvestigator removed on Seta's request
+            #  - https://vocabs.acdh.oeaw.ac.at/schema#hasAuthor
+            #  - https://vocabs.acdh.oeaw.ac.at/schema#hasCreator
             compiler: https://vocabs.acdh.oeaw.ac.at/schema#hasDigitisingAgent
             version: https://vocabs.acdh.oeaw.ac.at/schema#hasVersion
             language:
