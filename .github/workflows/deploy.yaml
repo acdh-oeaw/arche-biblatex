@@ -55,4 +55,5 @@ jobs:
           rancherProject: $RANCHER_PROJECT
           rancherNamespace: $RANCHER_NAMESPACE
           #rancherToken: ${{ secrets.RANCHERTOKEN }}
+          kubectlConfig: ${{ secrets.KUBE_CONFIG }}
           coverallsToken: ${{ secrets.coverallsToken }}
