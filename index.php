@@ -40,11 +40,16 @@ $service->setCallback($clbck);
 
 // response format negotation
 $format = Resource::MIME_BIBLATEX;
+// response format negotation
+$format = Resource::MIME_BIBLATEX;
 try {
-    $templates = glob(__DIR__ . '/vendor/citation-style-language/styles/*csl');
-    if (!empty($config->biblatex->cslTemplatesDir)) {
-        $templates = array_merge($templates, glob($config->biblatex->cslTemplatesDir . '/*csl'));
+    $localTemplates= [];
+    $localDir = preg_replace('|/$|', '', $config->biblatex->cslTemplatesDir ?? '');
+    if (!empty($localDir)) {
+        $localTemplates = glob($localDir . '/*csl');
     }
+    $templates = glob(__DIR__ . '/vendor/citation-style-language/styles/*csl');
+    $templates = array_merge($templates, $localTemplates);
     $formats = array_merge(
         [Resource::MIME_BIBLATEX, Resource::MIME_CSL_JSON, Resource::MIME_JSON],
         array_map(fn($x) => substr(basename($x), 0, -4), $templates)
@@ -57,6 +62,8 @@ try {
     if (!in_array($format, $formats)) {
         $format = HttpAccept::getBestMatch($formats);
         $format = $format->getFullType();
+    } elseif (!empty($localDir) && in_array($localDir . '/' . $format . '.csl', $localTemplates)) {
+        $format = $localDir . '/' . $format . '.csl';
     }
 } catch (RuntimeException $e) {
     if ($e->getMessage() === 'No matching format') {
