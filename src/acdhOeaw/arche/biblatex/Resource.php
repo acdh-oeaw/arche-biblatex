@@ -635,6 +635,10 @@ class Resource {
      * @return array<array<string, string>>
      */
     private function biblatexPersons2CslPersons(string $src): array {
+        $src = trim($src);
+        if (empty($src)) {
+            return [];
+        }
         $ret = explode(' and ', $src);
         $ret = array_map(fn($x) => explode(', ', $x), $ret);
         $ret = array_map(fn($x) => count($x) === 1 ? ['literal' => trim($x[0])] : [
