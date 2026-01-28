@@ -76,5 +76,5 @@ $param    = [
     $_GET['override'] ?? null,
     $format,
 ];
-$response = $service->serveRequest($_GET['id'] ?? '', $param);
+$response = $service->serveRequest($_GET['id'] ?? '', $param, isset($_GET['noCache']));
 $response->send();

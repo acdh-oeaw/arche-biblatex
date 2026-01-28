@@ -29,6 +29,7 @@ Optional query parameters:
     * `application/x-bibtex` - returning a [BibLaTeX bibliography entry](https://www.overleaf.com/learn/latex/Bibliography_management_with_biblatex#The_bibliography_file)
       ([reference documentation](https://mirrors.ibiblio.org/CTAN/macros/latex/contrib/biblatex/doc/biblatex.pdf)),
   * citation formats - name of any file (without the `.csl extension`) in the [official CSL styles repository](https://github.com/citation-style-language/styles), e.g. `apa-6th-edition`
+* `noCache=` - presence of this parameter overrides the cache. Useful for testing.
 
 # Override rules
 
