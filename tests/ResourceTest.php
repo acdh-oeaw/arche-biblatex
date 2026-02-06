@@ -295,7 +295,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $t1        = $t1 - $t0;
 
         $body          = 'Steiner, G. (n.d.). 3. Länderkonferenz. In P. Becker, Die Große Transformation. ARCHE. Retrieved from https://hdl.handle.net/21.11115/0000-000E-5942-4';
-        $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => 'text/plain'], false);
+        $expected      = new ResponseCacheItem($body, 200, ['Content-Type' => 'text/html'], false);
         $this->assertEquals($expected, $response1);
         $expected->hit = true;
         $this->assertEquals($expected, $response2);
