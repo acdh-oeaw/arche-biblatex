@@ -88,8 +88,10 @@ class Resource {
     static public function cacheHandler(RepoResourceInterface $res,
                                         array $param, object $config,
                                         ?LoggerInterface $log = null): ResponseCacheItem {
-        $format = $param[2] ?? self::MIME_BIBLATEX;
+        $format  = $param[2] ?? self::MIME_BIBLATEX;
         unset($param[2]);
+        $noCache = $param[3] ?? false;
+        unset($param[3]);
 
         $bibRes = new self($res, $config, $log);
 
@@ -98,8 +100,8 @@ class Resource {
             default => self::MIME_CSL_JSON,
         };
         $data       = match ($dataFormat) {
-            self::MIME_CSL_JSON => $bibRes->getCsl(...$param),
-            default => $bibRes->getBiblatex(...$param),
+            self::MIME_CSL_JSON => $bibRes->getCsl(...$param, noCache: $noCache),
+            default => $bibRes->getBiblatex(...$param, noCache: $noCache),
         };
 
         $output = match ($format) {
@@ -151,9 +153,13 @@ class Resource {
         return $output;
     }
 
+    /**
+     * 
+     * @return array<string, mixed>
+     */
     public function getCsl(string $lang, ?string $override = null,
-                           ?object $mapping = null): array {
-        $useCache = $this->res->getUri()->getValue() === $this->node->getValue();
+                           ?object $mapping = null, bool $noCache = false): array {
+        $useCache = !$noCache && $this->res->getUri()->getValue() === $this->node->getValue();
         if ($useCache) {
             $cacheKey = (string) $this->node . "@$lang#$override";
             $output   = $this->cache->get($cacheKey);
@@ -200,8 +206,9 @@ class Resource {
         return $output;
     }
 
-    public function getBiblatex(string $lang, ?string $override = null): string {
-        $csl       = $this->getCsl($lang, $override);
+    public function getBiblatex(string $lang, ?string $override = null,
+                                bool $noCache = false): string {
+        $csl       = $this->getCsl($lang, $override, null, $noCache);
         $personFmt = function ($x): string {
             if (isset($x['literal'])) {
                 return $x['literal'];
@@ -215,7 +222,7 @@ class Resource {
 
         $type = $this->csl2Biblatex('type', $csl['type'], '');
         if (empty($type)) {
-            throw new BiblatexException("Missing CSL to BibLaTeX mapping for type $value", 500);
+            throw new BiblatexException("Missing CSL to BibLaTeX mapping for type " . $csl['type'], 500);
         }
 
         $output = "@$type{" . $csl['id'];
@@ -234,6 +241,7 @@ class Resource {
                 } else {
                     list($year, $month) = explode('-', $value['raw'] . '-');
                 }
+                /** @phpstan-ignore variable.undefined */
                 $output .= ",\n  year = {" . $year . "}";
                 if (!empty($month)) {
                     $output .= ",\n  month = {" . $month . "}";
@@ -282,7 +290,7 @@ class Resource {
      * @param array<string, mixed> $fields
      * @param array<string, mixed> $csl
      */
-    private function applyOverridesCsl(array &$fields, array $csl) {
+    private function applyOverridesCsl(array &$fields, array $csl): void {
         foreach ($csl as $key => $val) {
             // check if the key is valid
             $this->getCslPropertyType($key);
@@ -324,6 +332,7 @@ class Resource {
                 if (!in_array($key, self::BIBLATEX_SPECIAL)) {
                     $key          = $this->biblatex2Csl('property', $key, $type) ?? $key;
                     $type         = $this->getCslPropertyType($key);
+                    /** @phpstan-ignore parameterByRef.type */
                     $fields[$key] = match ($type) {
                         self::TYPE_DATE => ['raw' => $value],
                         self::TYPE_PERSON => $this->biblatexPersons2CslPersons($value),
@@ -331,21 +340,25 @@ class Resource {
                     };
                     $this->log?->debug("Overwriting field '$key' with '$value'");
                 } elseif ($key === '_type' && $value !== self::NO_OVERRIDE) {
+                    /** @phpstan-ignore parameterByRef.type */
                     $fields['type'] = $this->biblatex2Csl('type', $value, '');
                     if (empty($fields['type'])) {
                         throw new BiblatexException("Missing BibLaTeX to CSL mapping for type $value", 500);
                     }
                     $this->log?->debug("Overwriting entry type with '$value'");
                 } elseif ($key === 'citation-key' && $value !== self::NO_OVERRIDE) {
+                    /** @phpstan-ignore parameterByRef.type */
                     $fields['id'] = $value;
                     $this->log?->debug("Overwriting citation key with '$value'");
                 } elseif ($key === 'year') {
+                    /** @phpstan-ignore parameterByRef.type */
                     $fields['date'] = ['raw' => $value];
                     if (isset($entry['month'])) {
                         $month = $entry['month'];
                         if (!is_numeric($month)) {
                             throw new BiblatexException('The month field value has to be numeric');
                         }
+                        /** @phpstan-ignore parameterByRef.type */
                         $fields['date']['raw'] .= sprintf('-%02d', $month);
                     }
                 }
@@ -549,6 +562,10 @@ class Resource {
         return $person;
     }
 
+    /**
+     * 
+     * @return string|array<string, mixed>|null
+     */
     private function formatParent(string $key, object $definition): string | array | null {
         $classTmpl  = new QT(null, DF::namedNode(RDF::RDF_TYPE));
         $parentTmpl = new QT($this->node, $definition->srcProperty ?? $this->schema->parent);
@@ -561,10 +578,12 @@ class Resource {
                 $parentTmpl = $parentTmpl->withSubject($parent);
             }
         } while ($parent !== null && ($class !== $srcClass || empty($srcClass)));
+        /** @phpstan-ignore argument.type */
         if ($this->node->equals($parentTmpl->getSubject())) {
             return null;
         }
         $citationRes       = clone $this;
+        /** @phpstan-ignore assign.propertyType */
         $citationRes->node = $parentTmpl->getSubject();
         if (!empty($definition->property)) {
             $mapping = (object) [$definition->property => $this->mapping->{$definition->property}];
@@ -576,10 +595,6 @@ class Resource {
         }
         $csl = $citationRes->getCsl($this->lang, null, $mapping);
         return reset($csl) ?: null;
-    }
-
-    private function escapeBiblatex(string $value): string {
-        return $value; // it seems that most important clients, like citation.js, anyway don't support any form of escaping
     }
 
     private function getCslPropertyType(string $property): string {

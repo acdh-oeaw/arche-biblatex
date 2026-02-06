@@ -43,14 +43,14 @@ $format = Resource::MIME_BIBLATEX;
 // response format negotation
 $format = Resource::MIME_BIBLATEX;
 try {
-    $localTemplates= [];
-    $localDir = preg_replace('|/$|', '', $config->biblatex->cslTemplatesDir ?? '');
+    $localTemplates = [];
+    $localDir       = preg_replace('|/$|', '', $config->biblatex->cslTemplatesDir ?? '');
     if (!empty($localDir)) {
         $localTemplates = glob($localDir . '/*csl');
     }
     $templates = glob(__DIR__ . '/vendor/citation-style-language/styles/*csl');
     $templates = array_merge($templates, $localTemplates);
-    $formats = array_merge(
+    $formats   = array_merge(
         [Resource::MIME_BIBLATEX, Resource::MIME_CSL_JSON, Resource::MIME_JSON],
         array_map(fn($x) => substr(basename($x), 0, -4), $templates)
     );
@@ -71,10 +71,12 @@ try {
     }
 }
 
+$noCache  = isset($_GET['noCache']);
 $param    = [
     $_GET['lang'] ?? $config->biblatex->defaultLang,
     $_GET['override'] ?? null,
     $format,
+    $noCache,
 ];
-$response = $service->serveRequest($_GET['id'] ?? '', $param, isset($_GET['noCache']));
+$response = $service->serveRequest($_GET['id'] ?? '', $param, $noCache);
 $response->send();
