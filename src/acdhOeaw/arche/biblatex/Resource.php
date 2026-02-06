@@ -111,7 +111,7 @@ class Resource {
             default => $bibRes->renderCslTemplate($data, $format),
         };
 
-        $mime = in_array($format, self::VALID_MIME) ? $format : 'text/plain';
+        $mime = in_array($format, self::VALID_MIME) ? $format : 'text/html';
         return new ResponseCacheItem($output, 200, ['Content-Type' => $mime]);
     }
 
@@ -148,8 +148,7 @@ class Resource {
         $tmpl   = StyleSheet::loadStyleSheet($template);
         $cp     = new CiteProc($tmpl);
         $output = $cp->render([$data]);
-        $output = preg_replace('`<[^>]+>\s*`', '', $output);
-        $output = html_entity_decode($output);
+        $output = preg_replace('`</?div[^>]*>\s*`', '', $output);
         return $output;
     }
 
