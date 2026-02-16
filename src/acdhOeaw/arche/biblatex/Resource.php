@@ -148,7 +148,7 @@ class Resource {
         $tmpl   = StyleSheet::loadStyleSheet($template);
         $cp     = new CiteProc($tmpl);
         $output = $cp->render([$data]);
-        $output = preg_replace('`</?div[^>]*>\s*`', '', $output);
+        //$output = preg_replace('`</?div[^>]*>\s*`', '', $output);
         return $output;
     }
 
