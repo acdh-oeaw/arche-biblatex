@@ -35,15 +35,13 @@ require_once 'vendor/autoload.php';
 
 $service = new Service(__DIR__ . '/config.yaml');
 $config  = $service->getConfig();
-$clbck   = fn($res, $param) => Resource::cacheHandler($res, $param, $config->biblatex, $service->getLog());
+$clbck   = fn($res, $param, $noCache) => Resource::cacheHandler($res, $param, $config->biblatex, $service->getLog(), $noCache);
 $service->setCallback($clbck);
 
-$noCache  = Service::getClearCache();
 $param    = [
     $_GET['lang'] ?? $config->biblatex->defaultLang,
     $_GET['override'] ?? null,
-    $_SERVER['HTTP_ACCEPT'] ?? $_GET['format'] ?? '',
-    $noCache,
+    $_GET['format'] ?? $_SERVER['HTTP_ACCEPT'] ?? '',
 ];
-$response = $service->serveRequest($_GET['id'] ?? '', $param, $noCache);
+$response = $service->serveRequest($_GET['id'] ?? '', $param);
 $response->send();

@@ -90,11 +90,10 @@ class Resource {
      */
     static public function cacheHandler(RepoResourceInterface $res,
                                         array $param, object $config,
-                                        ?LoggerInterface $log = null): ResponseCacheItem {
-        $noCache = $param[3] ?? false;
-        $format  = self::negotiateFormat((string) ($param[2] ?? ''), $noCache, $config->cslTemplatesCache, $config->cslTemplatesDir);
+                                        ?LoggerInterface $log = null,
+                                        bool $noCache = false): ResponseCacheItem {
+        $format = self::negotiateFormat((string) ($param[2] ?? ''), $noCache, $config->cslTemplatesCache, $config->cslTemplatesDir);
         unset($param[2]);
-        unset($param[3]);
 
         $bibRes = new self($res, $config, $log);
 
@@ -316,7 +315,11 @@ class Resource {
         foreach ($csl as $key => $val) {
             // check if the key is valid
             $this->getCslPropertyType($key);
-            $fields[$key] = $val;
+            if (empty($val)) {
+                unset($fields[$key]);
+            } else {
+                $fields[$key] = $val;
+            }
         }
     }
 
