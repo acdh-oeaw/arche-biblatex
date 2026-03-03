@@ -47,6 +47,8 @@ use acdhOeaw\arche\lib\dissCache\ResponseCacheItem;
 use acdhOeaw\arche\lib\dissCache\CachePdo;
 use zozlak\logging\Log;
 use zozlak\RdfConstants as RDF;
+use zozlak\httpAccept\Accept;
+use zozlak\httpAccept\NoMatchException;
 
 /**
  * Maps ARCHE resource metadata to a BibLaTeX bibliographic entry.
@@ -75,8 +77,9 @@ class Resource {
     const MIME_BIBLATEX            = 'application/x-bibtex';
     const MIME_CSL_JSON            = 'application/vnd.citationstyles.csl+json';
     const MIME_JSON                = 'application/json';
-    const VALID_MIME               = [self::MIME_BIBLATEX, self::MIME_CSL_JSON, self::MIME_JSON];
+    const VALID_MIME               = [self::MIME_CSL_JSON, self::MIME_JSON, self::MIME_BIBLATEX];
     const MAPPING_DEFAULT          = 'default';
+    const NO_MATCH_FORMAT          = '__no_match__';
     private const BIBLATEX_SPECIAL = [
         '_type', '_original', 'citation-key', 'type',
         'year', 'month'
@@ -88,31 +91,51 @@ class Resource {
     static public function cacheHandler(RepoResourceInterface $res,
                                         array $param, object $config,
                                         ?LoggerInterface $log = null): ResponseCacheItem {
-        $format  = $param[2] ?? self::MIME_BIBLATEX;
-        unset($param[2]);
         $noCache = $param[3] ?? false;
+        $format  = self::negotiateFormat((string) ($param[2] ?? ''), $noCache, $config->cslTemplatesCache, $config->cslTemplatesDir);
+        unset($param[2]);
         unset($param[3]);
 
         $bibRes = new self($res, $config, $log);
 
-        $dataFormat = match ($format) {
-            self::MIME_BIBLATEX => self::MIME_BIBLATEX,
-            default => self::MIME_CSL_JSON,
-        };
-        $data       = match ($dataFormat) {
-            self::MIME_CSL_JSON => $bibRes->getCsl(...$param, noCache: $noCache),
-            default => $bibRes->getBiblatex(...$param, noCache: $noCache),
+        $data = match ($format) {
+            self::MIME_BIBLATEX => $bibRes->getBiblatex(...$param, noCache: $noCache),
+            default => $bibRes->getCsl(...$param, noCache: $noCache),
         };
 
         $output = match ($format) {
+            self::MIME_BIBLATEX => $data,
             self::MIME_CSL_JSON => json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             self::MIME_JSON => json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-            self::MIME_BIBLATEX => $data,
             default => $bibRes->renderCslTemplate($data, $format),
         };
 
         $mime = in_array($format, self::VALID_MIME) ? $format : 'text/html';
         return new ResponseCacheItem($output, 200, ['Content-Type' => $mime]);
+    }
+
+    static private function negotiateFormat(string $format, bool $noCache,
+                                            string $cacheFile, string $localDir): string {
+        if ($noCache || !file_exists($cacheFile)) {
+            $templates = glob(__DIR__ . '/../../../../vendor/citation-style-language/styles/*csl');
+            $localDir  = preg_replace('|/$|', '', $localDir);
+            if (!file_exists($localDir) && is_dir($localDir)) {
+                $templates = array_merge($templates, glob($localDir . '/*csl'));
+            }
+            $formats = array_map(fn($x) => substr(basename($x), 0, strrpos(basename($x), '.')), $templates);
+            $formats = array_combine(
+                array_merge(self::VALID_MIME, $formats),
+                array_merge(self::VALID_MIME, $templates),
+            );
+
+            file_put_contents($cacheFile, json_encode($formats, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        } else {
+            $formats = json_decode(file_get_contents($cacheFile), true);
+        }
+        $format = empty($format) ? self::MIME_CSL_JSON : $format;
+        $format = (new Accept($format))->getBestMatch(array_keys($formats));
+        $format = str_replace('/*', '', $format->getFullType());
+        return $formats[$format];
     }
 
     private RepoResourceInterface $res;

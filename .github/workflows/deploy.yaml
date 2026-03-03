@@ -19,7 +19,7 @@ jobs:
       - uses: acdh-oeaw/arche_cicd_start_action@main
         with:
           phpExtensions: json,yaml,pdo,pdo_sqlite
-          phpstanLevel: 0
+          phpstanLevel: 6
           prepareRepoConfig: true
       - name: build docker image
         run: |

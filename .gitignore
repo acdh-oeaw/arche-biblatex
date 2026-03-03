@@ -7,3 +7,4 @@
 /build/logs
 /.phpunit.cache
 csl-schema.json
+/templates_list.json

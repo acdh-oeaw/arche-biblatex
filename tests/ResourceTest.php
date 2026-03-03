@@ -152,9 +152,9 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $cache = $this->getCache();
 
         $t0        = microtime(true);
-        $response1 = $cache->getResponse(['en', null, BibResource::MIME_CSL_JSON], self::RES_URL);
+        $response1 = $cache->getResponse(['en', null], self::RES_URL);
         $t1        = microtime(true);
-        $response2 = $cache->getResponse(['en', null, BibResource::MIME_CSL_JSON], self::RES_URL);
+        $response2 = $cache->getResponse(['en', null], self::RES_URL);
         $t2        = microtime(true) - $t1;
         $t1        = $t1 - $t0;
 
@@ -251,9 +251,9 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $cache    = $this->getCache();
 
         $t0        = microtime(true);
-        $response1 = $cache->getResponse(['en', $override], self::RES_URL);
+        $response1 = $cache->getResponse(['en', $override, BibResource::MIME_BIBLATEX], self::RES_URL);
         $t1        = microtime(true);
-        $response2 = $cache->getResponse(['en', $override], self::RES_URL);
+        $response2 = $cache->getResponse(['en', $override, BibResource::MIME_BIBLATEX], self::RES_URL);
         $t2        = microtime(true) - $t1;
         $t1        = $t1 - $t0;
 
