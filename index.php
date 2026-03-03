@@ -71,7 +71,7 @@ try {
     }
 }
 
-$noCache  = isset($_GET['noCache']);
+$noCache  = Service::getClearCache();
 $param    = [
     $_GET['lang'] ?? $config->biblatex->defaultLang,
     $_GET['override'] ?? null,
