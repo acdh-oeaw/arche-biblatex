@@ -280,8 +280,10 @@ class Resource {
                 $value = implode(' and ', array_map($personFmt, $value));
             }
 
-            $value  = str_replace(["{", "}"], [' ', '', "\\{", "\\}"], $value);
-            $output .= ",\n  $key = {" . $value . "}";
+            $value = str_replace(["{", "}"], [' ', '', "\\{", "\\}"], $value);
+            if (!empty(trim($value))) {
+                $output .= ",\n  $key = {" . $value . "}";
+            }
         }
         $output .= "\n}\n";
         return $output;
@@ -363,7 +365,12 @@ class Resource {
                         self::TYPE_PERSON => $this->biblatexPersons2CslPersons($value),
                         default => $value,
                     };
-                    $this->log?->debug("Overwriting field '$key' with '$value'");
+                    if (empty($fields[$key])) {
+                        unset($fields[$key]);
+                        $this->log?->debug("Removing field '$key'");
+                    } else {
+                        $this->log?->debug("Overwriting field '$key' with '$value'");
+                    }
                 } elseif ($key === '_type' && $value !== self::NO_OVERRIDE) {
                     /** @phpstan-ignore parameterByRef.type */
                     $fields['type'] = $this->biblatex2Csl('type', $value, '');

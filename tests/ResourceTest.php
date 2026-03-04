@@ -192,7 +192,8 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   year = {2008},
   location = {London},
   editor = {Vassilopoulos, Andreas and Evelpidou, Niki and Bender, Oliver and Krek, Alenka},
-  doi = {https://doi.org/10.1201/9780203881613}
+  doi = {https://doi.org/10.1201/9780203881613},
+  keyword = {}
 }";
         $cache    = $this->getCache();
 
@@ -218,7 +219,6 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
                 ['family' => 'Becker', 'given' => 'Peter'],
             ],
             'note'             => 'sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602',
-            'keyword'          => 'Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit',
             'abstract'         => 'Das Protokoll behandelt die 3. Länderkonferenz.',
             'date'             => ['raw' => '2008'],
             'publisher-place'  => 'London',
@@ -246,7 +246,8 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   year = {2008},
   location = {London},
   editor = {Vassilopoulos, Andreas and Evelpidou, Niki and Bender, Oliver and Krek, Alenka},
-  doi = {https://doi.org/10.1201/9780203881613}
+  doi = {https://doi.org/10.1201/9780203881613},
+  keyword = {}
 }";
         $cache    = $this->getCache();
 
@@ -267,7 +268,6 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
   booktitle = {Geoinformation technologies for geo-cultural landscapes: European Perspectives},
   bookauthor = {Becker, Peter},
   note = {sha1:ba29f9d179bb963516cf5d4c7ca268b9555a0602},
-  keywords = {Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit},
   abstract = {Das Protokoll behandelt die 3. Länderkonferenz.},
   year = {2008},
   location = {London},
