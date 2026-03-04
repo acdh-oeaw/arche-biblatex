@@ -22,14 +22,14 @@ An ARCHE dissemination service providing mapping of resource's metadata to the [
 Optional query parameters:
 
 * `lang=two-letters-language-code` - preferred labels language, e.g. `lang=en`
-* `override=biblatex-bibliographic-entry-or-csl-json-entry` - allows to manually override and/or add output fields. The format is autodetected and is independent of the output format (e.g. you can provided a CSL-JSON override while requesting the entry in the BibLaTeX format).
+* `override=csl-json-entry-or-biblatex-bibliographic-entry` - allows to manually override and/or add output fields. The format is autodetected and is independent of the output format (e.g. you can provided a CSL-JSON override while requesting the entry in the BibLaTeX format).
 * `format=desired-reponse-format`
   * bibliographic data formats:
     * `application/vnd.citationstyles.csl+json` (default) or `application/json` - returning a [CSL-JSON](https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html),
     * `application/x-bibtex` - returning a [BibLaTeX bibliography entry](https://www.overleaf.com/learn/latex/Bibliography_management_with_biblatex#The_bibliography_file)
       ([reference documentation](https://mirrors.ibiblio.org/CTAN/macros/latex/contrib/biblatex/doc/biblatex.pdf)),
   * citation formats - name of any file (without the `.csl extension`) in the [official CSL styles repository](https://github.com/citation-style-language/styles), e.g. `apa-6th-edition`
-* `noCache=` - presence of this parameter overrides the cache. Useful for testing.
+* `noCache` - presence of this parameter overrides the cache. Useful for testing. Parameter value doesn't matter. Can be also empty.
 
 # Override rules
 
@@ -42,7 +42,12 @@ Optional query parameters:
 
 ## Details
 
-* All bibliographic entry information including entry type and citation key are overriden, e.g.
+* BibLaTeX output is generated only as a conversion of the native CSL-JSON output to the BibLaTeX using the `config.yaml->biblatex->biblatexToCsl` mapping rules.
+* Overrides in the BibLaTeX format are fist converted to the CSL-JSON and then applied on the native CSL-JSON output.
+  If you request output in the BibLaTeX format, then the result is again converted to the BibLaTeX.
+  Because the CSL-JSON and BibLaTeX data models do not match perfectly, using BibLaTeX overrides can sometimes lead to the outputs you do not expect.
+  It is safer to use overrides in the CSL-JSON as in that case not mapping has to be performed.
+* If override is provided in the BibLaTeX format, then all bibliographic entry information including entry type and citation key are overriden, e.g.
   ```json
   {"type": "my type", "date": {"raw": "2025-06-03"}, "container-title": "Title of my choice"}
   ```
@@ -64,26 +69,26 @@ Optional query parameters:
 ## Example
 
 Compare the output for the sample resource (https://hdl.handle.net/21.11115/0000-000E-753C-C).  
-(please note the same data which are provided in the `override` request parameter below can be also provided in the "custom citation" resource metadata property)
+(please note the same data which are provided in the `override` request parameter below can be also provided in the `acdh:hasCustomCitation` resource metadata property)
 
 * Default: https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C
-* With entry type set to `book` but citation key preserved, `author` field overrided with a new value as well as `booktitle` and `bookauthor` fields removed:
-  https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C&override=%40dataset%7BNOOVERRIDE%2C%0A%20%20author%20%3D%20%7BDoe%2C%20John%7D%0A%2C%20%20booktitle%20%3D%20%7B%7D%2C%20bookauthor%20%3D%20%7B%7D%2C%0A%7D  
+* With entry type set to `book` `author` field overrided with a new value and `container-title` field removed:
+  https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C&override=%7B%22type%22%3A%22book%22%2C%22author%22%3A%5B%7B%22family%22%3A%22Doe%22%2C%22give%22%3A%22John%22%7D%5D%2C%22container-title%22%3A%22%22%7D
   The non-URL-encoded `override` parameter value () used here is:
   ```
-  @dataset{NOOVERRIDE,
-    author = {Doe, John},
-    booktitle = {},
-    bookauthor = {},
+  {
+    "type": "book",
+    "author": [{"family": "Doe", "give": "John"}],
+    "container-title": "",
   }
   ```
-* With `author` field overrided with a new value as well as `booktitle` and `bookauthor` fields removed.
-  As automatically created entry type and citation key are to be kept, a short syntax skipping the BibLaTeX entry header is used.
-  https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C&override=author%20%3D%20%7BDoe%2C%20John%7D%0A%2Cbooktitle%20%3D%20%7B%7D%2Cbookauthor%20%3D%20%7B%7D%2C
+* An override in a BibLaTeX format with `author` field overrided with a new value, the `booktitle` field removed (which corresponds to the `container-title` in the CSL-JSON)
+  and the result required to be a BibLaTeX bibliographic entry.
+  As the short BibLaTeX override syntax is used (no type and citation key declaration), an automatically created BibLaTeX entry type and citation key are kept.
+  https://arche-biblatex.acdh.oeaw.ac.at/?lang=en&id=https%3A%2F%2Fhdl.handle.net%2F21.11115%2F0000-000E-753C-C&override=author%20%3D%20%7BDoe%2C%20John%7D%0A%2Cbooktitle%20%3D%20%7B%7D%2Cbookauthor%20%3D%20%7B%7D%2C&format=application%2Fx-bibtex
   The non-URL-encoded `override` parameter value () used here is:
   ```
   author = {Doe, John},  
-  booktitle = {}, 
   bookauthor = {},
   ```
 
