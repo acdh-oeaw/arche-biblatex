@@ -366,6 +366,7 @@ class Resource {
                         default => $value,
                     };
                     if (empty($fields[$key])) {
+                        /** @phpstan-ignore parameterByRef.type */
                         unset($fields[$key]);
                         $this->log?->debug("Removing field '$key'");
                     } else {
