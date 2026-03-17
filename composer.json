@@ -1,7 +1,7 @@
 {
     "name": "acdh-oeaw/arche-biblatex",
     "type": "project",
-    "description": "Dissemination service generatix BibLaTeX bibliographic information data (.bib files) from ARCHE metadata",
+    "description": "ARCHE dissemination service generating CSL-formatted citations as well as CSL-JSON and BibLaTeX bibliographic entries.",
     "keywords": [],
     "homepage": "https://github.com/acdh-oeaw/arche-bibtex",
     "license": "MIT",

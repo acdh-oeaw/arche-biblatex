@@ -257,12 +257,11 @@ class Resource {
                 continue;
             } elseif ($key == 'date' && strlen($value['raw'] ?? '1234-01-23') < 10 && !isset($value[2])) {
                 if (isset($value[0])) {
-                    $yaar  = $value[0];
+                    $year  = $value[0];
                     $month = $value[1] ?? '';
                 } else {
                     list($year, $month) = explode('-', $value['raw'] . '-');
                 }
-                /** @phpstan-ignore variable.undefined */
                 $output .= ",\n  year = {" . $year . "}";
                 if (!empty($month)) {
                     $output .= ",\n  month = {" . $month . "}";
@@ -280,7 +279,7 @@ class Resource {
                 $value = implode(' and ', array_map($personFmt, $value));
             }
 
-            $value = str_replace(["{", "}"], [' ', '', "\\{", "\\}"], $value);
+            $value = str_replace(["\n", "\r", "{", "}"], [' ', '', "\\{", "\\}"], $value);
             if (!empty(trim($value))) {
                 $output .= ",\n  $key = {" . $value . "}";
             }
