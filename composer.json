@@ -18,7 +18,7 @@
         "guzzlehttp/guzzle": "^7",
         "acdh-oeaw/arche-lib": "^7",
         "renanbr/bibtex-parser": "^2.1",
-        "acdh-oeaw/arche-diss-cache": "^1.3.1",
+        "acdh-oeaw/arche-diss-cache": "^1.4",
         "seboettg/citeproc-php": "^2.6"
     },
     "autoload": {
