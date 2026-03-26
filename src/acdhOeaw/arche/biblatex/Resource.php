@@ -232,11 +232,11 @@ class Resource {
         $csl       = $this->getCsl($lang, $override, null, $noCache);
         $personFmt = function ($x): string {
             if (isset($x['literal'])) {
-                return $x['literal'];
+                return $this->escapeBiblatex($x['literal']);
             }
-            $ret = $x['family'] ?? '';
+            $ret = $this->escapeBibLatex($x['family'] ?? '');
             if (!empty($ret) && !empty($x['given'])) {
-                $ret .= ', ' . $x['given'];
+                $ret .= ', ' . $this->escapeBiblatex($x['given']);
             }
             return $ret;
         };
@@ -273,13 +273,12 @@ class Resource {
             $key = $this->csl2Biblatex('property', $key, $type) ?? $key;
             if (is_array($value) && isset($value['raw'])) {
                 // date
-                $value = $value['raw'];
+                $value = $this->escapeBiblatex($value['raw']);
             } elseif (is_array($value)) {
                 // persons
                 $value = implode(' and ', array_map($personFmt, $value));
             }
 
-            $value = str_replace(["\n", "\r", "{", "}"], [' ', '', "\\{", "\\}"], $value);
             if (!empty(trim($value))) {
                 $output .= ",\n  $key = {" . $value . "}";
             }
@@ -591,6 +590,11 @@ class Resource {
         if (count($person) > 1) {
             unset($person['literal']);
         }
+        // it looks like most templates skip the literal - see Redmine #28078
+        if (isset($person['literal']) && count($person) === 1) {
+            $person['family'] = $person['literal'];
+            unset($person['literal']);
+        }
         return $person;
     }
 
@@ -688,8 +692,17 @@ class Resource {
         }
         $ret = explode(' and ', $src);
         $ret = array_map(fn($x) => explode(', ', $x), $ret);
-        $ret = array_map(fn($x) => count($x) === 1 ? ['literal' => trim($x[0])] : [
+        // it looks like most templates skip the literal - see Redmine #28078
+        $ret = array_map(fn($x) => count($x) === 1 ? ['family' => trim($x[0])] : [
             'family' => trim($x[0]), 'given'  => trim($x[1])], $ret);
         return $ret;
+    }
+
+    private function escapeBiblatex(string $input): string {
+        $input = str_replace(['{', '}', "\n", "\r"], ['\{', '\}', ' ', ''], $input);
+        if (str_contains($input, ' ')) {
+            $input = '{' . $input . '}';
+        }
+        return $input;
     }
 }
