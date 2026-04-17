@@ -118,7 +118,7 @@ class Resource {
         if ($noCache || !file_exists($cacheFile)) {
             $templates = glob(__DIR__ . '/../../../../vendor/citation-style-language/styles/*csl');
             $localDir  = preg_replace('|/$|', '', $localDir);
-            if (!file_exists($localDir) && is_dir($localDir)) {
+            if (file_exists($localDir) && is_dir($localDir)) {
                 $templates = array_merge($templates, glob($localDir . '/*csl'));
             }
             $formats = array_map(fn($x) => substr(basename($x), 0, strrpos(basename($x), '.')), $templates);
