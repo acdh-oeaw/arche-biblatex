@@ -7,6 +7,7 @@ RUN chmod +x /usr/local/bin/install-php-extensions &&\
     install-php-extensions yaml pdo_pgsql intl @composer
 COPY docroot /var/www/html
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY healthcheck.sh /usr/local/bin/healthcheck.sh
 RUN cd /var/www/html &&\
     composer update -o --no-dev &&\
     chown -R www-data:www-data /var/www/html &&\
