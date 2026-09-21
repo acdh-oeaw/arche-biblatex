@@ -6,6 +6,7 @@ dissCacheService:
   ttl:
     resource: 3600     # 1 hour
     response: 31536000 # 1 year
+  maxCount: 50000
   repoDb:
   - archeProd.yaml
   - archeCur.yaml
