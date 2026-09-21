@@ -35,6 +35,7 @@ use acdhOeaw\arche\lib\dissCache\CachePdo;
 use acdhOeaw\arche\lib\dissCache\ResponseCache;
 use acdhOeaw\arche\lib\dissCache\RepoWrapperGuzzle;
 use acdhOeaw\arche\lib\dissCache\ResponseCacheItem;
+use acdhOeaw\arche\lib\dissCache\CallbackContextStub;
 use acdhOeaw\arche\biblatex\Resource as BibResource;
 
 /**
@@ -124,7 +125,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $t2        = microtime(true) - $t1;
         $t1        = $t1 - $t0;
 
-        $body          = "@incollection{Steiner_2021_139852,
+        $body     = "@incollection{Steiner_2021_139852,
   title = {3. Länderkonferenz},
   urldate = {" . date('Y-m-d') . "},
   date = {2021-07-26},
@@ -141,7 +142,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
 ";
 //  eprint = {21.11115/0000-000E-5942-4},
 //  eprinttype = {hdl},
-        $expected      = (new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_BIBLATEX], false))->withLastModified($response1->lastModified);
+        $expected = (new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_BIBLATEX], false))->withLastModified($response1->lastModified);
         $this->assertEquals($expected, $response1);
         $this->assertEquals($expected->withHit(true), $response2);
         $this->assertGreaterThan($t2, $t1 / 10);
@@ -157,7 +158,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $t2        = microtime(true) - $t1;
         $t1        = $t1 - $t0;
 
-        $body          = [
+        $body     = [
             'id'               => 'Steiner_2021_139852',
             'type'             => 'entry',
             'title'            => '3. Länderkonferenz',
@@ -175,8 +176,8 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
             'keyword'          => 'Bundesländer, Föderalismus, Verwaltung, Zwischenkriegszeit',
             'abstract'         => 'Das Protokoll behandelt die 3. Länderkonferenz.',
         ];
-        $body          = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $expected      = (new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_CSL_JSON], false))->withLastModified($response1->lastModified);
+        $body     = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $expected = (new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_CSL_JSON], false))->withLastModified($response1->lastModified);
         $this->assertEquals($expected, $response1);
         $this->assertEquals($expected->withHit(true), $response2);
         $this->assertGreaterThan($t2, $t1 / 10);
@@ -202,7 +203,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $t2        = microtime(true) - $t1;
         $t1        = $t1 - $t0;
 
-        $output        = [
+        $output   = [
             'id'               => 'gugl2008',
             'type'             => 'chapter',
             'title'            => 'Mapping and analysis of linear landscape features',
@@ -228,8 +229,8 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
             ],
             'DOI'              => 'https://doi.org/10.1201/9780203881613',
         ];
-        $body          = json_encode($output, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $expected      = (new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_JSON], false))->withLastModified($response1->lastModified);
+        $body     = json_encode($output, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $expected = (new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_JSON], false))->withLastModified($response1->lastModified);
         $this->assertEquals($expected, $response1);
         $this->assertEquals($expected->withHit(true), $response2);
         $this->assertGreaterThan($t2, $t1 / 10);
@@ -255,7 +256,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $t2        = microtime(true) - $t1;
         $t1        = $t1 - $t0;
 
-        $body          = "@inbook{gugl2008,
+        $body     = "@inbook{gugl2008,
   title = {Mapping and analysis of linear landscape features},
   urldate = {" . date('Y-m-d') . "},
   publisher = {ARCHE},
@@ -274,7 +275,7 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
 ";
 //  eprint = {21.11115/0000-000E-5942-4},
 //  eprinttype = {hdl},
-        $expected      = (new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_BIBLATEX], false))->withLastModified($response1->lastModified);
+        $expected = (new ResponseCacheItem($body, 200, ['Content-Type' => BibResource::MIME_BIBLATEX], false))->withLastModified($response1->lastModified);
         $this->assertEquals($expected, $response1);
         $this->assertEquals($expected->withHit(true), $response2);
         $this->assertGreaterThan($t2, $t1 / 10);
@@ -290,8 +291,8 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
         $t2        = microtime(true) - $t1;
         $t1        = $t1 - $t0;
 
-        $body          = "<div class=\"csl-bib-body\">\n  <div class=\"csl-entry\">Steiner, G. (n.d.). 3. Länderkonferenz. In P. Becker, <i>Die Große Transformation</i>. ARCHE. Retrieved from https://hdl.handle.net/21.11115/0000-000E-5942-4</div>\n</div>";
-        $expected      = (new ResponseCacheItem($body, 200, ['Content-Type' => 'text/html'], false))->withLastModified($response1->lastModified);
+        $body     = "<div class=\"csl-bib-body\">\n  <div class=\"csl-entry\">Steiner, G. (n.d.). 3. Länderkonferenz. In P. Becker, <i>Die Große Transformation</i>. ARCHE. Retrieved from https://hdl.handle.net/21.11115/0000-000E-5942-4</div>\n</div>";
+        $expected = (new ResponseCacheItem($body, 200, ['Content-Type' => 'text/html'], false))->withLastModified($response1->lastModified);
         $this->assertEquals($expected, $response1);
         $this->assertEquals($expected->withHit(true), $response2);
         $this->assertGreaterThan($t2, $t1 / 10);
@@ -377,7 +378,8 @@ class ResourceTest extends \PHPUnit\Framework\TestCase {
     private function getCache(): ResponseCache {
         $cfg                                  = self::$cfg->dissCacheService;
         $db                                   = new CachePdo('sqlite::memory:');
-        $clbck                                = fn($res, $param) => BibResource::cacheHandler($res, $param, self::$cfg->biblatex);
+        $context                              = new CallbackContextStub();
+        $clbck                                = fn($res, $param) => BibResource::cacheHandler($res, $param, self::$cfg->biblatex, $context);
         $repos                                = [new RepoWrapperGuzzle(false)];
         $searchConfig                         = new SearchConfig();
         $searchConfig->metadataMode           = $cfg->metadataMode;

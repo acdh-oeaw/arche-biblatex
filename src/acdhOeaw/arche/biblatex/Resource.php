@@ -45,6 +45,7 @@ use acdhOeaw\arche\lib\Schema;
 use acdhOeaw\arche\lib\RepoResourceInterface;
 use acdhOeaw\arche\lib\dissCache\ResponseCacheItem;
 use acdhOeaw\arche\lib\dissCache\CachePdo;
+use acdhOeaw\arche\lib\dissCache\CallbackContextInterface;
 use zozlak\logging\Log;
 use zozlak\RdfConstants as RDF;
 use zozlak\httpAccept\Accept;
@@ -90,8 +91,10 @@ class Resource {
      */
     static public function cacheHandler(RepoResourceInterface $res,
                                         array $param, object $config,
-                                        ?LoggerInterface $log = null,
-                                        bool $noCache = false): ResponseCacheItem {
+                                        CallbackContextInterface $context): ResponseCacheItem {
+        $noCache = $context->getNoCache();
+        $log     = $context->getLog();
+
         $format = self::negotiateFormat((string) ($param[2] ?? ''), $noCache, $config->cslTemplatesCache, $config->cslTemplatesDir);
         unset($param[2]);
 

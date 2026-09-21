@@ -33,9 +33,11 @@ header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
 
 require_once 'vendor/autoload.php';
 
+$t0 = microtime(true);
+
 $service = new Service(__DIR__ . '/config.yaml');
 $config  = $service->getConfig();
-$clbck   = fn($res, $param, $noCache) => Resource::cacheHandler($res, $param, $config->biblatex, $service->getLog(), $noCache);
+$clbck   = fn($res, $param, $context) => Resource::cacheHandler($res, $param, $config->biblatex, $context);
 $service->setCallback($clbck);
 
 $param    = [
@@ -45,3 +47,4 @@ $param    = [
 ];
 $response = $service->serveRequest($_GET['id'] ?? '', $param);
 $response->send();
+$service->getLog()->info("Response served in " . round(microtime(true) - $t0, 3) . " s");

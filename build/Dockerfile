@@ -1,4 +1,4 @@
-FROM php:8.3-apache
+FROM php:8.5-apache
 # VARIANT must be "production" or "development"
 ARG VARIANT
 RUN cp "$PHP_INI_DIR/php.ini-$VARIANT" "$PHP_INI_DIR/php.ini"
@@ -9,6 +9,7 @@ COPY docroot /var/www/html
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN cd /var/www/html &&\
     composer update -o --no-dev &&\
-    chown -R www-data:www-data /var/www/html
+    chown -R www-data:www-data /var/www/html &&\
+    ln -s /usr/local/bin/php /usr/bin/php
 EXPOSE 80
 ENTRYPOINT ["entrypoint.sh"]
