@@ -16,7 +16,7 @@
         "zozlak/logging": "^1.0",
         "renanbr/bibtex-parser": "^2.1",
         "seboettg/citeproc-php": "^2.7.1",
-        "acdh-oeaw/arche-diss-cache": "^3.2"
+        "acdh-oeaw/arche-diss-cache": "^3.2.1"
     },
     "autoload": {
         "psr-4": {
